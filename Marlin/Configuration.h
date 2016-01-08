@@ -149,7 +149,7 @@
 
 
 //3Dator
-#define FAN_ON_TEMP 70
+#define FAN_ON_TEMP 50
 extern bool fan_on[EXTRUDERS];
 
 // This makes temp sensor 1 a redundant sensor for sensor 0. If the temperatures difference between these sensors is to high the print will be aborted.

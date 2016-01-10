@@ -132,6 +132,9 @@
 // M129 - EtoP Closed (BariCUDA EtoP = electricity to air pressure transducer by jmil)
 // M140 - Set bed target temp
 // M150 - Set BlinkM Color Output R: Red<0-255> U(!): Green<0-255> B: Blue<0-255> over i2c, G for green does not work.
+// M151 - Set first FAN speed with P<value>
+// M152 - Set second FAN speed with P<value>
+// M153 - Send Demo Modus prog to LED board
 // M190 - Sxxx Wait for bed current temp to reach target temp. Waits only when heating
 //        Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
 // M200 D<millimeters>- set filament diameter and set E axis units to cubic millimeters (use S0 to set back to millimeters).
@@ -2745,25 +2748,56 @@ Sigma_Exit:
         byte blu = 0;
         byte prog = 3;
 
-        if(code_seen('R')){red = code_value();};
-        if(code_seen('B')){blu = code_value();};
-        if(code_seen('U')){grn = code_value();};
-        if(code_seen('P')){prog = code_value();};
+        if(code_seen('R'))red = code_value();
+        if(code_seen('U'))grn = code_value();
+        if(code_seen('B'))blu = code_value();
+        if(code_seen('P'))prog = code_value();
         SendColors(red,grn,blu,prog);
       }
       break;
-      case 151: // M150
+    case 151: // M151
       {
         byte power=0;
-        if(code_seen('P')){power = code_value();};
+        if(code_seen('P'))power = code_value();
         SendFanPWM(power);
       }
       break;
-      case 152: // M150
+    case 152: // M152
       {
         byte power=0;
-        if(code_seen('P')){power = code_value();};
+        if(code_seen('P'))power = code_value();
         SendRearFanPWM(power);
+      }
+      break;
+    case 153: // M153
+      {
+        byte prog=1;
+        if(code_seen('P'))prog = code_value();
+        SendDemo(prog);
+      }
+      break;
+    case 154: // M154 overwrite pixels
+      {
+        byte from=0;
+        byte to=0;
+        byte red = 0;
+        byte grn = 0;
+        byte blu = 0;
+        if(code_seen('F'))from = code_value();
+        if(code_seen('T'))to = code_value();
+        if(code_seen('R'))red = code_value();
+        if(code_seen('U'))grn = code_value();
+        if(code_seen('B'))blu = code_value();
+        SendOverwriteRange(from, to, red, grn, blu);
+      }
+      break;
+    case 155: // M150 stop overwriting pixels
+      {
+        byte from=0;
+        byte to=0;
+        if(code_seen('F'))from = code_value();
+        if(code_seen('T'))to = code_value();
+        SendStopOverwriteRange(from, to);
       }
       break;
     #endif //BLINKM

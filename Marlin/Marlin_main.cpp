@@ -131,10 +131,12 @@
 // M128 - EtoP Open (BariCUDA EtoP = electricity to air pressure transducer by jmil)
 // M129 - EtoP Closed (BariCUDA EtoP = electricity to air pressure transducer by jmil)
 // M140 - Set bed target temp
-// M150 - Set BlinkM Color Output R: Red<0-255> U(!): Green<0-255> B: Blue<0-255> over i2c, G for green does not work.
+// M150 - Set BlinkM Color Output R: Red<0-255> U(!): Green<0-255> B: Blue<0-255> over i2c, G for green does not work. Set animation Programm with P(1-9)
 // M151 - Set first FAN speed with P<value>
 // M152 - Set second FAN speed with P<value>
 // M153 - Send Demo Modus prog to LED board
+// M154 - Overwrite Pixels with parameter from (F) to (T) and color (R,U,B) like M150
+// M155 - Clear Overwrite with parameter from (F) to (T)
 // M190 - Sxxx Wait for bed current temp to reach target temp. Waits only when heating
 //        Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
 // M200 D<millimeters>- set filament diameter and set E axis units to cubic millimeters (use S0 to set back to millimeters).
@@ -562,7 +564,7 @@ void setup()
 
   //3Dator
   Wire.begin();
-  SendColors(255,180,120,3);
+  SendColors(255,255,255,3);
 
   tp_init();    // Initialize temperature loop
   plan_init();  // Initialize planner;
@@ -2791,7 +2793,7 @@ Sigma_Exit:
         SendOverwriteRange(from, to, red, grn, blu);
       }
       break;
-    case 155: // M150 stop overwriting pixels
+    case 155: // M155 stop overwriting pixels
       {
         byte from=0;
         byte to=0;

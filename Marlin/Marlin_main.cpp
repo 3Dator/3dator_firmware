@@ -2754,14 +2754,14 @@ Sigma_Exit:
     case 152: // M152
       {
         byte power=0;
-        if(code_seen('P'))power = code_value();
+        if(code_seen('S'))power = code_value();
         SendRearFanPWM(power);
       }
       break;
     case 153: // M153
       {
         byte prog=1;
-        if(code_seen('P'))prog = code_value();
+        if(code_seen('S'))prog = code_value();
         SendDemo(prog);
       }
       break;

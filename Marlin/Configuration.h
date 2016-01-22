@@ -175,7 +175,7 @@ extern bool fan_on[EXTRUDERS];
 #define HEATER_0_MAXTEMP 275
 #define HEATER_1_MAXTEMP 275
 #define HEATER_2_MAXTEMP 275
-#define BED_MAXTEMP 150
+#define BED_MAXTEMP 110
 
 // If your bed has low resistance e.g. .6 ohm and throws the fuse you can duty cycle it to reduce the
 // average current. The value should be an integer and the heat bed will be turned on for 1 interval of
@@ -207,9 +207,9 @@ extern bool fan_on[EXTRUDERS];
 //    #define  DEFAULT_Kd 114
 
 // 3Dator
-    #define  DEFAULT_Kp 23.85
-    #define  DEFAULT_Ki 1.93
-    #define  DEFAULT_Kd 73.75
+    #define  DEFAULT_Kp 19.91
+    #define  DEFAULT_Ki 1.23
+    #define  DEFAULT_Kd 80.33
 
 // Mendel Parts V9 on 12V
 //    #define  DEFAULT_Kp 63.0
@@ -502,10 +502,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
 //old #define DEFAULT_AXIS_STEPS_PER_UNIT   {109.8,109.8,800,97.12592718*2}  // default steps per unit
 #define DEFAULT_AXIS_STEPS_PER_UNIT   {110.6,110.6,800,97.12592718*2}  // default steps per unit
 
-#define DEFAULT_MAX_FEEDRATE          {500, 500, 40, 25}    // (mm/sec)
-#define DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
+#define DEFAULT_MAX_FEEDRATE          {500, 500, 30, 100}    // (mm/sec)
+#define DEFAULT_MAX_ACCELERATION      {5000,5000,100,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
 
-#define DEFAULT_ACCELERATION          5000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
+#define DEFAULT_ACCELERATION          3000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
 #define DEFAULT_RETRACT_ACCELERATION  9000   // X, Y, Z and E max acceleration in mm/s^2 for retracts
 
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).

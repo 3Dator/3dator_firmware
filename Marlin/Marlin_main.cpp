@@ -2401,7 +2401,8 @@ Sigma_Exit:
       break;
     //3Dator
     case 109:
-    {// M109 - Wait for extruder heater to reach target.
+    {
+      // M109 - Wait for extruder heater to reach target.
       SendColors(255,20,0,3);
       if(setTargetedHotend(109)){
         break;
@@ -2539,14 +2540,15 @@ Sigma_Exit:
     #if defined(FAN_PIN) && FAN_PIN > -1
       //3Dator
       case 106: //M106 Fan On
-       {
+      {
         byte fan0 = 255;
         if(code_seen('S')){fan0 = code_value();}
         SendFanPWM(fan0);
-        break;
+      }
+      break;
       //3Dator
       case 107: //M107 Fan Off
-        {
+      {
         byte fan0 = 0;
         if(code_seen('S')){
           fan0 = 0;
@@ -3723,8 +3725,8 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
       gcode_LastN = Stopped_gcode_LastN;
       FlushSerialRequestResend();
     break;
-
-  }}}
+    }
+  }
 
   else if(code_seen('T'))
   {

@@ -2402,7 +2402,7 @@ Sigma_Exit:
     //3Dator
     case 109:
     {// M109 - Wait for extruder heater to reach target.
-      SendColors(255,80,50,3);
+      SendColors(255,20,0,3);
       if(setTargetedHotend(109)){
         break;
       }
@@ -2497,6 +2497,7 @@ Sigma_Exit:
       break;
     case 190: // M190 - Wait for bed heater to reach target.
 //    enquecommand_P(PSTR("M150 R255 U3 B0 P0"));
+    SendColors(255,20,0,3);
     #if defined(TEMP_BED_PIN) && TEMP_BED_PIN > -1
         LCD_MESSAGEPGM(MSG_BED_HEATING);
         if (code_seen('S')) {
@@ -2539,25 +2540,18 @@ Sigma_Exit:
       //3Dator
       case 106: //M106 Fan On
        {
-        int fan0;
-        int fan1;
-
+        byte fan0 = 255;
         if(code_seen('S')){fan0 = code_value();}
-
         SendFanPWM(fan0);
-
         break;
-
       //3Dator
       case 107: //M107 Fan Off
         {
-        int fan0;
-        int fan1;
-
-        if(code_seen('S')){ fan0 = 0;}
-
+        byte fan0 = 0;
+        if(code_seen('S')){
+          fan0 = 0;
+        }
         SendFanPWM(fan0);
-
       }
       break;
 
@@ -2755,13 +2749,6 @@ Sigma_Exit:
         if(code_seen('B'))blu = code_value();
         if(code_seen('P'))prog = code_value();
         SendColors(red,grn,blu,prog);
-      }
-      break;
-    case 151: // M151
-      {
-        byte power=0;
-        if(code_seen('P'))power = code_value();
-        SendFanPWM(power);
       }
       break;
     case 152: // M152

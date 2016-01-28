@@ -796,7 +796,7 @@ static void lcd_control_set_z_offset()
         enquecommand_P(PSTR("G28 X Y"));
         enquecommand_P(PSTR("G28 Z"));
         enquecommand_P(PSTR("G30"));
-        SendColors(25,255,20,3);
+        SendColors(25,255,20,3,0);
         enquecommand_P(PSTR("G92 Z"));
         homing_for_z_offset_done = true;
         //zprobe_zoffset_start = zprobe_zoffset;
@@ -823,7 +823,8 @@ static void lcd_control_set_z_offset()
         {
             lcd_quick_feedback();
             enquecommand_P(PSTR("M500"));
-            SendColors(255,180,120,3);
+            enquecommand_P(PSTR("G28 Z"));
+            SendColors(255,255,255,3,0);
             currentMenu = lcd_control_menu;
             homing_for_z_offset_done = false;
             encoderPosition = 0;
@@ -836,14 +837,14 @@ static void lcd_control_change_nozzle()
     enquecommand_P(PSTR("M109 S200"));
     enquecommand_P(PSTR("G28"));
     enquecommand_P(PSTR("G1 X85 F5000"));
-    SendColors(255,180,120,3);
+    SendColors(255,180,120,3,0);
     enquecommand_P(PSTR("M117 Ready to Change Nozzle"));
     preheat_nozzle_change = true;
     st_synchronize();
     lcd_quick_feedback();
     currentMenu = lcd_status_screen;
     preheat_nozzle_change = false;
-    SendColors(25,255,20,3);
+    SendColors(25,255,20,3,0);
 }
 
 static void lcd_control_temperature_menu()

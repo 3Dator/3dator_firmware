@@ -564,7 +564,7 @@ void setup()
 
   //3Dator
   Wire.begin();
-  SendColors(255,255,255,3);
+  SendColors(255,255,255,3,0);
 
   tp_init();    // Initialize temperature loop
   plan_init();  // Initialize planner;
@@ -2403,7 +2403,7 @@ Sigma_Exit:
     case 109:
     {
       // M109 - Wait for extruder heater to reach target.
-      SendColors(255,20,0,3);
+      SendColors(255,20,0,3,0);
       if(setTargetedHotend(109)){
         break;
       }
@@ -2498,7 +2498,7 @@ Sigma_Exit:
       break;
     case 190: // M190 - Wait for bed heater to reach target.
 //    enquecommand_P(PSTR("M150 R255 U3 B0 P0"));
-    SendColors(255,20,0,3);
+    SendColors(255,20,0,3,0);
     #if defined(TEMP_BED_PIN) && TEMP_BED_PIN > -1
         LCD_MESSAGEPGM(MSG_BED_HEATING);
         if (code_seen('S')) {
@@ -2745,12 +2745,14 @@ Sigma_Exit:
         byte grn = 0;
         byte blu = 0;
         byte prog = 3;
+        byte loops = 0;
 
         if(code_seen('R'))red = code_value();
         if(code_seen('U'))grn = code_value();
         if(code_seen('B'))blu = code_value();
         if(code_seen('P'))prog = code_value();
-        SendColors(red,grn,blu,prog);
+        if(code_seen('C'))loops = code_value();
+        SendColors(red,grn,blu,prog,loops);
       }
       break;
     case 152: // M152

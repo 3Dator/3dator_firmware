@@ -5,7 +5,7 @@
 #include "Wire.h"
 
 
-void SendColors(byte red, byte grn, byte blu, byte prog){
+void SendColors(byte red, byte grn, byte blu, byte prog, byte loops){
   //send information over i2c
   Wire.beginTransmission(4);
   Wire.write(1);
@@ -13,6 +13,7 @@ void SendColors(byte red, byte grn, byte blu, byte prog){
   Wire.write(red);
   Wire.write(grn);
   Wire.write(blu);
+  Wire.write(loops);
   Wire.endTransmission();
 }
 

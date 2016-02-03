@@ -406,7 +406,7 @@ static void lcd_tune_menu()
 #endif
     //MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
     //3Dator
-    //  MENU_ITEM_EDIT_CALLBACK(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255,updateFanPwm);
+    MENU_ITEM_EDIT_CALLBACK(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255,updateFanPwm);
 
     MENU_ITEM_EDIT(int3, MSG_FLOW, &extrudemultiply, 10, 999);
     MENU_ITEM_EDIT(int3, MSG_FLOW0, &extruder_multiply[0], 10, 999);

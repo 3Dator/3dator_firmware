@@ -1,3 +1,6 @@
+//3dator
+#define DATOR_TEST
+
 #include "temperature.h"
 #include "ultralcd.h"
 #ifdef ULTRA_LCD
@@ -8,6 +11,8 @@
 #include "stepper.h"
 #include "ConfigurationStore.h"
 #include "BlinkM.h"
+//3dator
+#include <SPI.h>
 
 int8_t encoderDiff; /* encoderDiff is updated from interrupt context and added to encoderPosition every LCD update */
 
@@ -56,6 +61,14 @@ static void lcd_main_menu();
 static void lcd_tune_menu();
 static void lcd_prepare_menu();
 static void lcd_move_menu();
+
+//3dator
+#ifdef DATOR_TEST
+static void lcd_test_menu();
+# define	DATOR_NUM_LED	54
+# define	MSG_TEST_MENU	"Test menu"		// should be in language.h but did not want to touch that file
+#endif
+
 static void lcd_control_menu();
 //3Dator
 static void lcd_control_set_z_offset();
@@ -601,6 +614,10 @@ static void lcd_prepare_menu()
     }
 #endif
     MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu);
+//3dator
+#ifdef DATOR_TEST
+    MENU_ITEM(submenu, MSG_TEST_MENU, lcd_test_menu);
+#endif
     END_MENU();
 }
 
@@ -763,6 +780,153 @@ static void lcd_move_menu()
     //TODO:X,Y,Z,E
     END_MENU();
 }
+
+//3Dator
+#ifdef DATOR_TEST
+static void lcd_test_menu()
+{
+	char		ln[64];
+	char 		xmin, xmax, ymin, ymax, zmin, zmax;
+	int		led, fan;
+	static int	last_led, last_fan, queue_led;
+
+
+	// avoid quick timeout
+        refresh_cmd_timeout();
+
+	// by default endstop status is unknown
+	xmin= xmax= ymin= ymax= zmin= zmax= '?';
+
+	// check wether enabled and get status
+# if defined(X_MIN_PIN) && X_MIN_PIN > -1
+	xmin= READ(X_MIN_PIN)+'0';
+# endif
+# if defined(X_MAX_PIN) && X_MAX_PIN > -1
+	xmax= READ(X_MAX_PIN)+'0';
+# endif
+# if defined(Y_MIN_PIN) && Y_MIN_PIN > -1
+	ymin= READ(Y_MIN_PIN)+'0';
+# endif
+# if defined(Y_MAX_PIN) && Y_MAX_PIN > -1
+	ymax= READ(Y_MAX_PIN)+'0';
+# endif
+# if defined(Z_MIN_PIN) && Z_MIN_PIN > -1
+	zmin= READ(Z_MIN_PIN)+'0';
+# endif
+# if defined(Z_MAX_PIN) && Z_MAX_PIN > -1
+	zmax= READ(Z_MAX_PIN)+'0';
+# endif
+
+	// display endstop status
+	sprintf (ln, "X-%c+%c  Y-%c+%c  Z-%c+%c",
+		xmin, xmax, ymin, ymax, zmin, zmax);
+        lcd.setCursor(0, 0);
+	lcd.print(ln);
+
+	// display extruder temperature
+	sprintf (ln, "Ex0:%s Ex1:%s",
+		ftostr31ns(current_temperature[0]),
+# if defined(EXTRUDER) && EXTRUDER > 1
+		ftostr31ns(current_temperature[1]));
+# else
+		"?");
+# endif
+        lcd.setCursor(0, 1);
+	lcd.print(ln);
+       
+       	// display heating bed temperature
+	sprintf (ln, "Bed:%s",
+		ftostr31ns(current_temperature_bed));
+	lcd.setCursor(0, 2);
+	lcd.print(ln);
+
+	// LEDs are toggled once a second
+	led= (millis()/1000) % DATOR_NUM_LED;
+
+	// I was not able to run more than 4 GCODE commands within this function
+	// therefore 3 GCODE commands are executed and the next 2 on next entry of this function
+	if (queue_led) {
+		// fourth is blue and fifth off
+		sprintf (ln, "M154 F%d T%d R0 U0 B0",   (last_led+0) % DATOR_NUM_LED, (last_led+0) % DATOR_NUM_LED);
+	       	enquecommand(ln);
+		sprintf (ln, "M154 F%d T%d R0 U0 B255", (last_led+1) % DATOR_NUM_LED, (last_led+1) % DATOR_NUM_LED);
+	       	enquecommand(ln);
+
+		queue_led= 0;
+		return; 	// do not execute any more GCODE commands within this function
+	}
+
+	if (led != last_led) {
+		sprintf (ln, "LED:%02d", (led+4) % DATOR_NUM_LED);
+		lcd.setCursor(10, 2);
+		lcd.print(ln);
+
+		// first is white, than red and green
+		sprintf (ln, "M154 F%d T%d R0 U255 B0", (led+2) % DATOR_NUM_LED, (led+2) % DATOR_NUM_LED);
+        	enquecommand(ln);
+		sprintf (ln, "M154 F%d T%d R255 U0 B0", (led+3) % DATOR_NUM_LED, (led+3) % DATOR_NUM_LED);
+        	enquecommand(ln);
+		sprintf (ln, "M154 F%d T%d R255 U255 B255", (led+4) % DATOR_NUM_LED, (led+4) % DATOR_NUM_LED);
+        	enquecommand(ln);
+		last_led= led;
+
+		queue_led= 1;	// there are move GCODE commands to be executed on next entry of this function
+		return; 	// do not execute any more GCODE commands within this function
+	}
+
+	//* toggle fans every 5 seconds at full speed
+	fan= (millis()/1000/5) % 4;
+	if (fan != last_fan) {
+        	lcd.setCursor(0, 3);
+
+		// there are 4 combinations
+		switch (fan) {
+			case 1: 
+				lcd.print("Radial fan");
+        			enquecommand_P(PSTR("M106 S255"));
+        			enquecommand_P(PSTR("M152 S0"));
+				break;
+			case 2: 
+				lcd.print("Coldend fan");
+        			enquecommand_P(PSTR("M106 S0"));
+        			enquecommand_P(PSTR("M152 S255"));
+				break;
+			case 3: 
+				lcd.print("Both fans  ");
+        			enquecommand_P(PSTR("M106 S255"));
+        			enquecommand_P(PSTR("M152 S255"));
+				break;
+			case 0: 
+			default: 
+				lcd.print("No fan     ");
+        			enquecommand_P(PSTR("M106 S0"));
+        			enquecommand_P(PSTR("M152 S0"));
+				break;
+		}
+		last_fan= fan;
+	}	
+
+	// user tapped button to exit menu
+    	if (LCD_CLICKED)
+    	{
+		// for safety put fans on half speed
+        	enquecommand_P(PSTR("M106 S128"));
+        	enquecommand_P(PSTR("M152 S128"));
+
+		// light on all LED
+		sprintf (ln, "M154 F%d T%d R255 U255 B255", 0, DATOR_NUM_LED-1);
+        	enquecommand(ln);
+
+		// return to last menu
+        	lcd_quick_feedback();
+        	currentMenu = lcd_prepare_menu;
+        	encoderPosition = 0;
+
+		return;
+    	}
+}
+#endif
+
 
 static void lcd_control_menu()
 {

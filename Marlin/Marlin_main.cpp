@@ -564,8 +564,25 @@ void setup()
 
   //3Dator
   Wire.begin();
-  SendColors(255,255,255,3,0);
 
+  if(STARTCHECK>0){
+    //Routine that helps checking, if everything is working like it should.
+    /*
+    	1. check if STARTCHECK Variable is 1, if not the check has already been done.
+      2. check the Endstops. Wait until user has tested each endstop by hand.
+      3. check if XYZ motors work the right way, by driving each motor by the knob. Like in the prepare menu.
+      4. time for first auto home.
+      5. fan test
+      6. SET_Z_OFFSET
+      7. thermistor test heat everything to 30°C
+      8. set STARTCHECK to 0, so it wont open again
+
+    */
+    lcd_test_menu();
+    
+
+  }
+  SendColors(255,255,255,3,0);
   tp_init();    // Initialize temperature loop
   plan_init();  // Initialize planner;
   watchdog_init();

@@ -275,7 +275,14 @@ static void lcd_sdcard_stop()
     card.closefile();
     quickStop();
     //3Dator
-     enquecommand_P(PSTR("G28"));
+    enquecommand_P(PSTR("G28"));
+    lcdDrawUpdate = 1;
+    setTargetHotend0(0);
+    setTargetHotend1(0);
+    setTargetHotend2(0);
+    setTargetBed(0);
+    fanSpeed = 0;
+    SendFanPWM(fanSpeed);
 
     if(SD_FINISHED_STEPPERRELEASE)
     {
@@ -340,46 +347,6 @@ static void lcd_autostart_sd()
 #endif
 
 #ifdef BABYSTEPPING
-static void lcd_babystep_x()
-{
-    if (encoderPosition != 0)
-    {
-        babystepsTodo[X_AXIS]+=(int)encoderPosition;
-        encoderPosition=0;
-        lcdDrawUpdate = 1;
-    }
-    if (lcdDrawUpdate)
-    {
-        lcd_implementation_drawedit(PSTR(MSG_BABYSTEPPING_X),"");
-    }
-    if (LCD_CLICKED)
-    {
-        lcd_quick_feedback();
-        currentMenu = lcd_tune_menu;
-        encoderPosition = 0;
-    }
-}
-
-static void lcd_babystep_y()
-{
-    if (encoderPosition != 0)
-    {
-        babystepsTodo[Y_AXIS]+=(int)encoderPosition;
-        encoderPosition=0;
-        lcdDrawUpdate = 1;
-    }
-    if (lcdDrawUpdate)
-    {
-        lcd_implementation_drawedit(PSTR(MSG_BABYSTEPPING_Y),"");
-    }
-    if (LCD_CLICKED)
-    {
-        lcd_quick_feedback();
-        currentMenu = lcd_tune_menu;
-        encoderPosition = 0;
-    }
-}
-
 
 static void lcd_babystep_z()
 {
@@ -419,7 +386,7 @@ static void lcd_tune_menu()
 #endif
     //3Dator
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
-    
+
 
     MENU_ITEM_EDIT(int3, MSG_FLOW, &extrudemultiply, 10, 999);
     MENU_ITEM_EDIT(int3, MSG_FLOW0, &extruder_multiply[0], 10, 999);
@@ -431,10 +398,6 @@ static void lcd_tune_menu()
 #endif
 
 #ifdef BABYSTEPPING
-    #ifdef BABYSTEP_XY
-      MENU_ITEM(submenu, MSG_BABYSTEP_X, lcd_babystep_x);
-      MENU_ITEM(submenu, MSG_BABYSTEP_Y, lcd_babystep_y);
-    #endif //BABYSTEP_XY
     MENU_ITEM(submenu, MSG_BABYSTEP_Z, lcd_babystep_z);
 #endif
 #ifdef FILAMENTCHANGEENABLE
@@ -833,7 +796,7 @@ static void lcd_test_menu()
 # endif
         lcd.setCursor(0, 1);
 	lcd.print(ln);
-       
+
        	// display heating bed temperature
 	sprintf (ln, "Bed:%s",
 		ftostr31ns(current_temperature_bed));
@@ -881,30 +844,30 @@ static void lcd_test_menu()
 
 		// there are 4 combinations
 		switch (fan) {
-			case 1: 
+			case 1:
 				lcd.print("Radial fan");
         			enquecommand_P(PSTR("M106 S255"));
         			enquecommand_P(PSTR("M152 S0"));
 				break;
-			case 2: 
+			case 2:
 				lcd.print("Coldend fan");
         			enquecommand_P(PSTR("M106 S0"));
         			enquecommand_P(PSTR("M152 S255"));
 				break;
-			case 3: 
+			case 3:
 				lcd.print("Both fans  ");
         			enquecommand_P(PSTR("M106 S255"));
         			enquecommand_P(PSTR("M152 S255"));
 				break;
-			case 0: 
-			default: 
+			case 0:
+			default:
 				lcd.print("No fan     ");
         			enquecommand_P(PSTR("M106 S0"));
         			enquecommand_P(PSTR("M152 S0"));
 				break;
 		}
 		last_fan= fan;
-	}	
+	}
 
 	// user tapped button to exit menu
     	if (LCD_CLICKED)

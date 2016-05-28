@@ -20,3 +20,6 @@ http://wiki.3dator.com
 20.05.2016
 * fixed and activated implementation for babysteps in z axis.
 * after stopping a print hotends and bed will now cooldown, fan on top will stop.
+
+28.05.2016
+* added a remaining time calculation on main info screen. (starts working after 5%)

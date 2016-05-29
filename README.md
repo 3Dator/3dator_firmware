@@ -25,4 +25,4 @@ http://wiki.3dator.com
 * added a remaining time calculation on main info screen.
 * fixed inconsistent status messages after print is done or stopped.
 * increased rear fan speed for cooldown after print stopped.
-* fixed stange menu behavior after stopping a print.
+* fixed strange menu behavior after stopping a print.

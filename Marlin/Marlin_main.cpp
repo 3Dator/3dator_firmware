@@ -771,20 +771,10 @@ void get_command()
        serial_count >= (MAX_CMD_SIZE - 1)||n==-1)
     {
       if(card.eof()){
-        SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
         stoptime=millis();
-        char time[30];
-        unsigned long t=(stoptime-starttime)/1000;
-        int hours, minutes;
-        minutes=(t/60)%60;
-        hours=t/60/60;
-        sprintf_P(time, PSTR("%i hours %i minutes"),hours, minutes);
-        SERIAL_ECHO_START;
-        SERIAL_ECHOLN(time);
-        lcd_setstatus(time);
+        lcd_setstatus(WELCOME_MSG);
         card.printingHasFinished();
         card.checkautostart(true);
-
       }
       if(serial_char=='#')
         stop_buffering=true;

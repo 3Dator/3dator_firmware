@@ -277,18 +277,24 @@ static void lcd_sdcard_stop()
     //3Dator
     enquecommand_P(PSTR("G28"));
     lcdDrawUpdate = 1;
+    currentMenu = lcd_status_screen;
+    encoderPosition = 0;
     setTargetHotend0(0);
     setTargetHotend1(0);
     setTargetHotend2(0);
     setTargetBed(0);
     fanSpeed = 0;
     SendFanPWM(fanSpeed);
+    //cooldown faster
+    SendRearFanPWM(200);
 
     if(SD_FINISHED_STEPPERRELEASE)
     {
         enquecommand_P(PSTR(SD_FINISHED_RELEASECOMMAND));
     }
     autotempShutdown();
+
+    lcd_setstatus(WELCOME_MSG);
 }
 
 /* Menu implementation */

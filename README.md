@@ -21,5 +21,8 @@ http://wiki.3dator.com
 * fixed and activated implementation for babysteps in z axis.
 * after stopping a print hotends and bed will now cooldown, fan on top will stop.
 
-28.05.2016
-* added a remaining time calculation on main info screen. (starts working after 5%)
+29.05.2016
+* added a remaining time calculation on main info screen.
+* fixed inconsistent status messages after print is done or stopped.
+* increased rear fan speed for cooldown after print stopped.
+* fixed stange menu behavior after stopping a print.

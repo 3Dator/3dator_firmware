@@ -459,12 +459,13 @@ static void lcd_implementation_status_screen()
         lcd.print(' ');
 #  else
     lcd.setCursor(0,1);
-  lcd_printPGM(PSTR("left: "));
-    if(starttime != 0 and card.percentDone() > 5)
+    // 3dator
+    lcd_printPGM(PSTR("left: "));
+    if(starttime != 0 and card.percentDoneFloat() > 0.3)
     {
         uint16_t time_secs = millis()/1000 - starttime/1000;
-        float timeperpercent = time_secs / card.percentDone();
-        uint16_t percentleft = 100 - card.percentDone();
+        float timeperpercent = time_secs / card.percentDoneFloat();
+        float percentleft = 100 - card.percentDoneFloat();
         uint16_t time_left = percentleft * timeperpercent;
         lcd.print(itostr2((time_left/60)/60));
         lcd.print(':');

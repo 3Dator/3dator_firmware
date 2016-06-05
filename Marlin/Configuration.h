@@ -386,23 +386,22 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
 
 // Travel limits after homing
 
-#ifdef DATOR_CONFIG == 1
-
-#define X_MAX_POS 170
-#define X_MIN_POS 0
-#define Y_MAX_POS 180
-#define Y_MIN_POS 0
-#define Z_MAX_POS 269
-#define Z_MIN_POS 0
+#if DATOR_CONFIG == 1
+  #define X_MAX_POS 170
+  #define X_MIN_POS 0
+  #define Y_MAX_POS 180
+  #define Y_MIN_POS 0
+  #define Z_MAX_POS 269
+  #define Z_MIN_POS 0
 #endif
 
-#ifdef DATOR_CONFIG == 2
-#define X_MAX_POS 90
-#define X_MIN_POS 0
-#define Y_MAX_POS 90
-#define Y_MIN_POS 0
-#define Z_MAX_POS 90
-#define Z_MIN_POS 0
+#if DATOR_CONFIG == 2
+  #define X_MAX_POS 90
+  #define X_MIN_POS 0
+  #define Y_MAX_POS 90
+  #define Y_MIN_POS 0
+  #define Z_MAX_POS 90
+  #define Z_MIN_POS 0
 #endif
 
 #define X_MAX_LENGTH (X_MAX_POS - X_MIN_POS)

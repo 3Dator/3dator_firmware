@@ -23,7 +23,8 @@
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__ // build date and time
-#define STRING_CONFIG_H_AUTHOR "(3Dator GmbH, Alexander Schlauer, Moritz Mair, Sebastian Deppisch)" // Who made the changes.
+#define STRING_CONFIG_H_AUTHOR "(3Dator GmbH)" // Who made the changes.
+#define STRING_VERSION_NUMBER "1.0.3"
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
 // This allows the connection of wireless adapters (for instance) to non-default port pins.

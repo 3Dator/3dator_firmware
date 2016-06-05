@@ -28,7 +28,8 @@ int absPreheatFanSpeed;
 
 //3Dator
 bool homing_for_z_offset_done = false;
-bool  preheat_nozzle_change = false;
+bool preheat_nozzle_change = false;
+bool start_about_info = true;
 
 #ifdef ULTIPANEL
 static float manual_feedrate[] = MANUAL_FEEDRATE;
@@ -66,11 +67,11 @@ static void lcd_move_menu();
 #ifdef DATOR_TEST
 static void lcd_test_menu();
 # define	DATOR_NUM_LED	54
-# define	MSG_TEST_MENU	"Test menu"		// should be in language.h but did not want to touch that file
 #endif
 
 static void lcd_control_menu();
 //3Dator
+static void lcd_about_info();
 static void lcd_control_set_z_offset();
 static void lcd_control_change_nozzle();
 
@@ -306,13 +307,7 @@ static void lcd_main_menu()
     {
         MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
     }else{
-        //3Dator
-        MENU_ITEM(submenu, MSG_NOZZLECHANGE, lcd_control_change_nozzle);
-
-
         MENU_ITEM(submenu, MSG_PREPARE, lcd_prepare_menu);
-
-
 
     }
     MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
@@ -570,6 +565,8 @@ static void lcd_prepare_menu()
       MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
     #endif
 #endif
+    //3Dator
+    MENU_ITEM(submenu, MSG_NOZZLECHANGE, lcd_control_change_nozzle);
     MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
     MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
     //MENU_ITEM(gcode, MSG_SET_ORIGIN, PSTR("G92 X0 Y0 Z0"));
@@ -917,11 +914,33 @@ static void lcd_control_menu()
     MENU_ITEM(function, MSG_LOAD_EPROM, Config_RetrieveSettings);
 #endif
     MENU_ITEM(function, MSG_RESTORE_FAILSAFE, Config_ResetDefault);
+    MENU_ITEM(submenu, MSG_ABOUT, lcd_about_info);
     END_MENU();
 }
 
-// MENU_ITEM_EDIT(float32, MSG_ZPROBE_ZOFFSET, &zprobe_zoffset, 0.5, 50);
 //3Dator
+static void lcd_about_info()
+{
+    if(start_about_info){
+      enquecommand_P(PSTR("M150 P7"));
+      st_synchronize();
+      start_about_info = false;
+    }
+    lcd.setCursor(1, 1);
+    lcd_printPGM(PSTR("3Dator Marlin"));
+    lcd.setCursor(1, 2);
+    lcd_printPGM(PSTR("Version: " STRING_VERSION_NUMBER));
+
+    if (LCD_CLICKED)
+    {
+        lcd_quick_feedback();
+        currentMenu = lcd_control_menu;
+        encoderPosition = 0;
+        enquecommand_P(PSTR("M150 P10"));
+        start_about_info = true;
+    }
+}
+
 static void lcd_control_set_z_offset()
 {
     if(!homing_for_z_offset_done){

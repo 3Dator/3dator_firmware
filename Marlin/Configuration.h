@@ -94,7 +94,7 @@
 // 1 3Dator Kit from 3Dator.com
 // 2 3Dator Mini
 
-#define DATOR_CONFIG 2
+#define DATOR_CONFIG 1
 
 
 // Define this to set a unique identifier for this printer, (Used by some programs to differentiate between machines)

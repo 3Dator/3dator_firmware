@@ -24,7 +24,7 @@
 // build by the user have been successfully uploaded into firmware.
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__ // build date and time
 #define STRING_CONFIG_H_AUTHOR "(3Dator GmbH)" // Who made the changes.
-#define STRING_VERSION_NUMBER "1.0.3"
+#define STRING_VERSION_NUMBER "1.0.3.1"
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
 // This allows the connection of wireless adapters (for instance) to non-default port pins.
@@ -88,6 +88,14 @@
 
 // Define this to set a custom name for your generic Mendel,
 #define CUSTOM_MENDEL_NAME "3Dator"
+
+//3Dator
+// Here are some predefined configs for different 3Dator Configurations
+// 1 3Dator Kit from 3Dator.com
+// 2 3Dator Mini
+
+#define DATOR_CONFIG 1
+
 
 // Define this to set a unique identifier for this printer, (Used by some programs to differentiate between machines)
 // You can use an online service to generate a random UUID. (eg http://www.uuidgenerator.net/version4)
@@ -377,12 +385,25 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
 #define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
 
 // Travel limits after homing
+
+#ifdef DATOR_CONFIG == 1
+
 #define X_MAX_POS 170
 #define X_MIN_POS 0
 #define Y_MAX_POS 180
 #define Y_MIN_POS 0
 #define Z_MAX_POS 269
 #define Z_MIN_POS 0
+#endif
+
+#ifdef DATOR_CONFIG == 2
+#define X_MAX_POS 90
+#define X_MIN_POS 0
+#define Y_MAX_POS 90
+#define Y_MIN_POS 0
+#define Z_MAX_POS 90
+#define Z_MIN_POS 0
+#endif
 
 #define X_MAX_LENGTH (X_MAX_POS - X_MIN_POS)
 #define Y_MAX_LENGTH (Y_MAX_POS - Y_MIN_POS)

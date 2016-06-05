@@ -26,3 +26,10 @@ http://wiki.3dator.com
 * fixed inconsistent status messages after print is done or stopped.
 * increased rear fan speed for cooldown after print stopped.
 * fixed strange menu behavior after stopping a print.
+
+05.06.2016 (1.0.3.1)
+* added versioning
+* added about menu to view version from printer lcd
+* started to implement led menu
+* moved change nozzle menu item
+* added german translations

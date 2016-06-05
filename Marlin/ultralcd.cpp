@@ -75,6 +75,7 @@ static void lcd_about_info();
 static void lcd_control_set_z_offset();
 static void lcd_control_change_nozzle();
 static void lcd_led_menu();
+static void lcd_led_brightness();
 
 static void lcd_control_set_z_home();
 static void lcd_control_temperature_menu();

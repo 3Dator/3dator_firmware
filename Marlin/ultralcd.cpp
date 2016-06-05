@@ -74,6 +74,7 @@ static void lcd_control_menu();
 static void lcd_about_info();
 static void lcd_control_set_z_offset();
 static void lcd_control_change_nozzle();
+static void lcd_led_menu();
 
 static void lcd_control_set_z_home();
 static void lcd_control_temperature_menu();
@@ -914,6 +915,7 @@ static void lcd_control_menu()
     MENU_ITEM(function, MSG_LOAD_EPROM, Config_RetrieveSettings);
 #endif
     MENU_ITEM(function, MSG_RESTORE_FAILSAFE, Config_ResetDefault);
+    //MENU_ITEM(submenu, MSG_NOZZLECHANGE, lcd_led_menu);
     MENU_ITEM(submenu, MSG_ABOUT, lcd_about_info);
     END_MENU();
 }
@@ -997,6 +999,18 @@ static void lcd_control_change_nozzle()
     currentMenu = lcd_status_screen;
     preheat_nozzle_change = false;
     SendColors(25,255,20,3,0);
+}
+
+static void lcd_led_menu()
+{
+    START_MENU();
+    MENU_ITEM(back, MSG_MAIN, lcd_control_menu);
+    MENU_ITEM(submenu, MSG_LED_BRIGHTNESS, lcd_led_brightness);
+    END_MENU();
+}
+
+static void lcd_led_brightness(){
+    //set brightness here
 }
 
 static void lcd_control_temperature_menu()

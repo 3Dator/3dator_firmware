@@ -190,6 +190,7 @@
     #define MSG_NOZZLECHANGE "Change Nozzle"
 		#define	MSG_TEST_MENU	"Test menu"
 		#define MSG_ABOUT "About"
+		#define MSG_LED_BRIGHTNESS "LED brightness"
 
 // Serial Console Messages
 
@@ -798,6 +799,7 @@
     #define MSG_NOZZLECHANGE "Düse wechseln"
 		#define	MSG_TEST_MENU	"Test Menü"
 		#define MSG_ABOUT "About"
+		#define MSG_LED_BRIGHTNESS "LED Helligkeit"
 
 
 // Serial Console Messages

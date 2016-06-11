@@ -190,7 +190,13 @@
     #define MSG_NOZZLECHANGE "Change Nozzle"
 		#define	MSG_TEST_MENU	"Test menu"
 		#define MSG_ABOUT "About"
+		#define MSG_LED_MENU "LED Menu"
 		#define MSG_LED_BRIGHTNESS "LED brightness"
+		#define MSG_LED_RED "value red"
+		#define MSG_LED_GREEN "value green"
+		#define MSG_LED_BLUE "value blue"
+		#define MSG_LED_OFF "LEDs full off"
+		#define MSG_LED_ON "LEDs full on"
 
 // Serial Console Messages
 
@@ -799,7 +805,13 @@
     #define MSG_NOZZLECHANGE "Düse wechseln"
 		#define	MSG_TEST_MENU	"Test Menü"
 		#define MSG_ABOUT "About"
+		#define MSG_LED_MENU "LED Menü"
 		#define MSG_LED_BRIGHTNESS "LED Helligkeit"
+		#define MSG_LED_RED "Rot-Wert"
+		#define MSG_LED_GREEN "Grün-Wert"
+		#define MSG_LED_BLUE "Blau-Wert"
+		#define MSG_LED_OFF "LEDs komplett aus"
+		#define MSG_LED_ON "LEDs komplett an"
 
 
 // Serial Console Messages

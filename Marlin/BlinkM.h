@@ -1,6 +1,7 @@
 //3Dator
 
 #include "Wire.h"
+#include "ultralcd.h"
 
 extern int led_colors[3];
 extern void SendColors(byte red, byte grn, byte blu, byte prog, byte loops);

@@ -30,6 +30,12 @@ int absPreheatFanSpeed;
 bool homing_for_z_offset_done = false;
 bool preheat_nozzle_change = false;
 bool start_about_info = true;
+extern int led_colors[3];
+byte led_brightness = 255;
+bool start_brightness_menu = true;
+bool start_value_red_menu = true;
+bool start_value_green_menu = true;
+bool start_value_blue_menu = true;
 
 #ifdef ULTIPANEL
 static float manual_feedrate[] = MANUAL_FEEDRATE;
@@ -76,6 +82,12 @@ static void lcd_control_set_z_offset();
 static void lcd_control_change_nozzle();
 static void lcd_led_menu();
 static void lcd_led_brightness();
+static void lcd_led_red();
+static void lcd_led_green();
+static void lcd_led_blue();
+static void lcd_led_off();
+static void lcd_led_on();
+
 
 static void lcd_control_set_z_home();
 static void lcd_control_temperature_menu();
@@ -916,7 +928,7 @@ static void lcd_control_menu()
     MENU_ITEM(function, MSG_LOAD_EPROM, Config_RetrieveSettings);
 #endif
     MENU_ITEM(function, MSG_RESTORE_FAILSAFE, Config_ResetDefault);
-    //MENU_ITEM(submenu, MSG_NOZZLECHANGE, lcd_led_menu);
+    MENU_ITEM(submenu, MSG_LED_MENU, lcd_led_menu);
     MENU_ITEM(submenu, MSG_ABOUT, lcd_about_info);
     END_MENU();
 }
@@ -954,7 +966,6 @@ static void lcd_control_set_z_offset()
         SendColors(25,255,20,3,0);
         enquecommand_P(PSTR("G92 Z"));
         homing_for_z_offset_done = true;
-        //zprobe_zoffset_start = zprobe_zoffset;
         zprobe_zoffset = 0;
         st_synchronize();
         encoderPosition = 0;
@@ -967,13 +978,8 @@ static void lcd_control_set_z_offset()
             current_position[Z_AXIS] = zprobe_zoffset_start - zprobe_zoffset;
             plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], manual_feedrate[Z_AXIS]/60, active_extruder);
             encoderPosition = 0;
-            lcdDrawUpdate = 1;
-        }
-        if (lcdDrawUpdate)
-        {
             lcd_implementation_drawedit(PSTR("Z Offset"), ftostr31(zprobe_zoffset));
         }
-
         if (LCD_CLICKED)
         {
             lcd_quick_feedback();
@@ -992,26 +998,124 @@ static void lcd_control_change_nozzle()
     enquecommand_P(PSTR("M109 S200"));
     enquecommand_P(PSTR("G28"));
     enquecommand_P(PSTR("G1 X85 F5000"));
-    SendColors(255,180,120,3,0);
     enquecommand_P(PSTR("M117 Ready to Change Nozzle"));
     preheat_nozzle_change = true;
     st_synchronize();
-    lcd_quick_feedback();
     currentMenu = lcd_status_screen;
     preheat_nozzle_change = false;
-    SendColors(25,255,20,3,0);
 }
 
 static void lcd_led_menu()
 {
     START_MENU();
-    MENU_ITEM(back, MSG_MAIN, lcd_control_menu);
+    MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
     MENU_ITEM(submenu, MSG_LED_BRIGHTNESS, lcd_led_brightness);
+    MENU_ITEM(submenu, MSG_LED_RED, lcd_led_red);
+    MENU_ITEM(submenu, MSG_LED_GREEN, lcd_led_green);
+    MENU_ITEM(submenu, MSG_LED_BLUE, lcd_led_blue);
+    MENU_ITEM(function, MSG_LED_OFF, lcd_led_off);
+    MENU_ITEM(function, MSG_LED_ON, lcd_led_on);
     END_MENU();
 }
 
+static void lcd_led_off(){
+  led_colors[0] = 0;
+  led_colors[1] = 0;
+  led_colors[2] = 0;
+  SendColors(led_colors[0], led_colors[1], led_colors[2], 2, 0);
+  currentMenu = lcd_led_menu;
+}
+
+static void lcd_led_on(){
+  led_colors[0] = 255;
+  led_colors[1] = 255;
+  led_colors[2] = 255;
+  SendColors(led_colors[0], led_colors[1], led_colors[2], 2, 0);
+  currentMenu = lcd_led_menu;
+}
+
 static void lcd_led_brightness(){
-    //set brightness here
+  if(start_brightness_menu){
+    lcd_implementation_drawedit(PSTR(MSG_LED_BRIGHTNESS), itostr3(led_brightness));
+    start_brightness_menu = false;
+  }
+  if (encoderPosition != 0)
+  {
+      led_brightness += encoderPosition;
+      encoderPosition = 0;
+      lcd_implementation_drawedit(PSTR(MSG_LED_BRIGHTNESS), itostr3(led_brightness));
+      SendColors(led_colors[0], led_colors[1], led_colors[2], 2, 0);
+  }
+  if (LCD_CLICKED)
+  {
+      lcd_quick_feedback();
+      currentMenu = lcd_led_menu;
+      encoderPosition = 0;
+      start_brightness_menu = true;
+  }
+}
+
+static void lcd_led_red(){
+  if(start_value_red_menu){
+    lcd_implementation_drawedit(PSTR(MSG_LED_RED), itostr3(led_colors[0]));
+    start_value_red_menu = false;
+  }
+  if (encoderPosition != 0)
+  {
+      led_colors[0] += encoderPosition;
+      encoderPosition = 0;
+      lcd_implementation_drawedit(PSTR(MSG_LED_RED), itostr3(led_colors[0]));
+      SendColors(led_colors[0], led_colors[1], led_colors[2], 2, 0);
+  }
+  if (LCD_CLICKED)
+  {
+      lcd_quick_feedback();
+      currentMenu = lcd_led_menu;
+      encoderPosition = 0;
+      start_value_red_menu = true;
+  }
+}
+
+static void lcd_led_green(){
+  if(start_value_green_menu){
+    lcd_implementation_drawedit(PSTR(MSG_LED_GREEN), itostr3(led_colors[1]));
+    start_value_green_menu = false;
+  }
+  if (encoderPosition != 0)
+  {
+      led_colors[1] += encoderPosition;
+      encoderPosition = 0;
+      lcd_implementation_drawedit(PSTR(MSG_LED_GREEN), itostr3(led_colors[1]));
+      SendColors(led_colors[0], led_colors[1], led_colors[2], 2, 0);
+  }
+  if (LCD_CLICKED)
+  {
+      lcd_quick_feedback();
+      currentMenu = lcd_led_menu;
+      encoderPosition = 0;
+      start_value_green_menu = true;
+  }
+}
+
+static void lcd_led_blue(){
+  if(start_value_blue_menu){
+    lcd_implementation_drawedit(PSTR(MSG_LED_BLUE), itostr3(led_colors[2]));
+    start_value_blue_menu = false;
+  }
+  if (encoderPosition != 0)
+  {
+      led_colors[2] += encoderPosition;
+      encoderPosition = 0;
+      lcd_implementation_drawedit(PSTR(MSG_LED_BLUE), itostr3(led_colors[2]));
+      SendColors(led_colors[0], led_colors[1], led_colors[2], 2, 0);
+  }
+  if (LCD_CLICKED)
+  {
+      lcd_quick_feedback();
+      currentMenu = lcd_led_menu;
+      encoderPosition = 0;
+      start_value_blue_menu = true;
+  }
 }
 
 static void lcd_control_temperature_menu()

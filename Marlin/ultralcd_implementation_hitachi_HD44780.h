@@ -466,10 +466,10 @@ static void lcd_implementation_status_screen()
         uint16_t time_secs = millis()/1000 - starttime/1000;
         float timeperpercent = time_secs / card.percentDoneFloat();
         float percentleft = 100 - card.percentDoneFloat();
-        uint16_t time_left = percentleft * timeperpercent;
-        lcd.print(itostr2((time_left/60)/60));
+        uint16_t time_left = (percentleft * timeperpercent)/60;
+        lcd.print(itostr2(time_left/60));
         lcd.print(':');
-        lcd.print(itostr2((time_left/60)%60));
+        lcd.print(itostr2(time_left%60));
     }else{
         lcd_printPGM(PSTR("--:--"));
     }

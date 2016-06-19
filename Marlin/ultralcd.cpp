@@ -30,7 +30,6 @@ int absPreheatFanSpeed;
 bool homing_for_z_offset_done = false;
 bool preheat_nozzle_change = false;
 bool start_about_info = true;
-extern int led_colors[3];
 byte led_brightness = 255;
 bool start_brightness_menu = true;
 bool start_value_red_menu = true;
@@ -1041,10 +1040,18 @@ static void lcd_led_brightness(){
   }
   if (encoderPosition != 0)
   {
-      led_brightness += encoderPosition;
+    if((int16_t)led_brightness + (int16_t)encoderPosition < 1){
+      led_brightness = 1;
       encoderPosition = 0;
-      lcd_implementation_drawedit(PSTR(MSG_LED_BRIGHTNESS), itostr3(led_brightness));
-      SendColors(led_colors[0], led_colors[1], led_colors[2], 2, 0);
+    }
+    if(led_brightness + encoderPosition > 255){
+      led_brightness = 255;
+      encoderPosition = 0;
+    }
+    led_brightness += encoderPosition;
+    encoderPosition = 0;
+    lcd_implementation_drawedit(PSTR(MSG_LED_BRIGHTNESS), itostr3(led_brightness));
+    SetBrightness(led_brightness);
   }
   if (LCD_CLICKED)
   {

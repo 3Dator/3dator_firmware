@@ -37,3 +37,6 @@ http://wiki.3dator.com
 11.06.2016 (1.0.4)
 * added LED menu to control brightness and colors
 * made nozzle change menu less funky
+
+19.06.2016 (1.0.4.1)
+* bug fixes

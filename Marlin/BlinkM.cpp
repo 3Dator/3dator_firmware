@@ -6,23 +6,38 @@
 
 #include "ultralcd.h"
 
-int led_colors[3] = {255,255,255};
+byte led_colors[3] = {255,255,255};
 
 void SendColors(byte red, byte grn, byte blu, byte prog, byte loops){
   //send information over i2c
   Wire.beginTransmission(4);
   Wire.write(1);
   Wire.write(prog);
-  Wire.write((byte)(led_colors[0]*(led_brightness/255.0)));
-  Wire.write((byte)(led_colors[1]*(led_brightness/255.0)));
-  Wire.write((byte)(led_colors[2]*(led_brightness/255.0)));
+  Wire.write(red);
+  Wire.write(grn);
+  Wire.write(blu);
   Wire.write(loops);
   Wire.endTransmission();
 
-  led_colors[0] = red;
-  led_colors[1] = grn;
-  led_colors[2] = blu;
+  if(prog <= 6){
+    led_colors[0] = red;
+    led_colors[1] = grn;
+    led_colors[2] = blu;
+  }
 }
+
+void SetBrightness(byte brightness){
+  //send information over i2c
+  Wire.beginTransmission(4);
+  Wire.write(1);
+  Wire.write(11);
+  Wire.write(0);
+  Wire.write(0);
+  Wire.write(brightness);
+  Wire.write(0);
+  Wire.endTransmission();
+}
+
 
 void SendFanPWM(byte fan_speed){
   //send information over i2c

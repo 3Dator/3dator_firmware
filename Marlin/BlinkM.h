@@ -3,8 +3,9 @@
 #include "Wire.h"
 #include "ultralcd.h"
 
-extern int led_colors[3];
+extern byte led_colors[3];
 extern void SendColors(byte red, byte grn, byte blu, byte prog, byte loops);
+extern void SetBrightness(byte brightness);
 extern void SendRearFanPWM(byte fan_speed);
 extern void SendFanPWM(byte fan0);
 extern void SendDemo(byte prog);

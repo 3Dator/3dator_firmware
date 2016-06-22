@@ -46,7 +46,7 @@ static float manual_feedrate[] = MANUAL_FEEDRATE;
 typedef void (*menuFunc_t)();
 
 uint8_t lcd_status_message_level;
-char lcd_status_message[LCD_WIDTH+1] = WELCOME_MSG;
+char lcd_status_message[LCD_WIDTH*2] = WELCOME_MSG;
 
 #ifdef DOGLCD
 #include "dogm_lcd_implementation.h"

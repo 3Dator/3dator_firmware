@@ -509,34 +509,9 @@ static void lcd_implementation_status_screen()
     }
 #endif
 
-	//3dator
     //Status message line on the last line
-    static uint8_t messageOffset=0;
-    uint8_t i=0;
-    for(uint8_t i=0;i<LCD_WIDTH;i++){
-    	lcd.setCursor(i, LCD_HEIGHT - 1);
-		if(i+messageOffset < strlen(lcd_status_message)){
-			lcd.print(lcd_status_message[(i+messageOffset)]);//message it self
-		}else if(strlen(lcd_status_message) > LCD_WIDTH){
-			if(i+messageOffset > strlen(lcd_status_message)){
-				lcd.print(lcd_status_message[(i-1+messageOffset)-strlen(lcd_status_message)]); //message coming from the right
-			}else{
-				lcd.print(" "); //space between the message(s)
-			}
-		}else{
-			lcd.print(" "); //clear screen
-		}
-		
-    }
-    if(strlen(lcd_status_message) > LCD_WIDTH){
-    	if(++messageOffset > strlen(lcd_status_message)){
-			messageOffset=0;
-		}
-    }else{
-    	messageOffset=0;
-    }
-    
-   
+    lcd.setCursor(0, LCD_HEIGHT - 1);
+    lcd.print(lcd_status_message);
 }
 static void lcd_implementation_drawmenu_generic(uint8_t row, const char* pstr, char pre_char, char post_char)
 {

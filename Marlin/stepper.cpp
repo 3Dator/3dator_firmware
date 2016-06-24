@@ -698,7 +698,8 @@ ISR(TIMER1_COMPA_vect)
       // ensure we're running at the correct step rate, even if we just came off an acceleration
       step_loops = step_loops_nominal;
     }
-
+//3Dator
+  OCR1A = (OCR1A < (TCNT1 +16)) ? (TCNT1 + 16) : OCR1A;
     // If current block is finished, reset pointer
     if (step_events_completed >= current_block->step_event_count) {
       current_block = NULL;

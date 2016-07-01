@@ -36,6 +36,8 @@ bool start_value_red_menu = true;
 bool start_value_green_menu = true;
 bool start_value_blue_menu = true;
 
+int8_t menu_additional_offset;
+
 #ifdef ULTIPANEL
 static float manual_feedrate[] = MANUAL_FEEDRATE;
 #endif // ULTIPANEL
@@ -66,13 +68,6 @@ extern bool powersupply;
 static void lcd_main_menu();
 static void lcd_tune_menu();
 static void lcd_prepare_menu();
-static void lcd_move_menu();
-
-//3dator
-#ifdef DATOR_TEST
-static void lcd_test_menu();
-# define	DATOR_NUM_LED	54
-#endif
 
 static void lcd_control_menu();
 //3Dator
@@ -148,7 +143,11 @@ static void menu_action_setting_edit_callback_long5(const char* pstr, unsigned l
 #define START_MENU() do { \
     if (encoderPosition > 0x8000) encoderPosition = 0; \
     if (encoderPosition / ENCODER_STEPS_PER_MENU_ITEM < currentMenuViewOffset) currentMenuViewOffset = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM;\
+    currentMenuViewOffset += menu_additional_offset;\
     uint8_t _lineNr = currentMenuViewOffset, _menuItemNr; \
+    _menuItemNr += menu_additional_offset;\
+    if(menu_additional_offset > 0){encoderPosition += ENCODER_STEPS_PER_MENU_ITEM;}\
+    menu_additional_offset = 0;\
     bool wasClicked = LCD_CLICKED;\
     for(uint8_t _drawLineNr = 0; _drawLineNr < LCD_HEIGHT; _drawLineNr++, _lineNr++) { \
         _menuItemNr = 0;
@@ -175,7 +174,7 @@ static void menu_action_setting_edit_callback_long5(const char* pstr, unsigned l
 #define MENU_ITEM_EDIT_CALLBACK(type, label, args...) MENU_ITEM(setting_edit_callback_ ## type, label, PSTR(label) , ## args )
 #define END_MENU() \
     if (encoderPosition / ENCODER_STEPS_PER_MENU_ITEM >= _menuItemNr) encoderPosition = _menuItemNr * ENCODER_STEPS_PER_MENU_ITEM - 1; \
-    if ((uint8_t)(encoderPosition / ENCODER_STEPS_PER_MENU_ITEM) >= currentMenuViewOffset + LCD_HEIGHT) { currentMenuViewOffset = (encoderPosition / ENCODER_STEPS_PER_MENU_ITEM) - LCD_HEIGHT + 1; lcdDrawUpdate = 1; _lineNr = currentMenuViewOffset - 1; _drawLineNr = -1; } \
+    if ((uint8_t)(encoderPosition / ENCODER_STEPS_PER_MENU_ITEM) >= currentMenuViewOffset + LCD_HEIGHT) { currentMenuViewOffset = (encoderPosition / ENCODER_STEPS_PER_MENU_ITEM) - LCD_HEIGHT + 1; lcdDrawUpdate = 1; _lineNr = currentMenuViewOffset - 1; _drawLineNr = -1;} \
     } } while(0)
 
 /** Used variables to keep track of the menu */
@@ -229,6 +228,7 @@ static void lcd_status_screen()
     if (LCD_CLICKED)
     {
         currentMenu = lcd_main_menu;
+        menu_additional_offset = 1;
         encoderPosition = 0;
         lcd_quick_feedback();
         lcd_implementation_init(); // to maybe revive the LCD if static electricity killed it.
@@ -316,38 +316,38 @@ static void lcd_main_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_WATCH, lcd_status_screen);
+
+    #ifdef SDSUPPORT
+        if (card.cardOK)
+        {
+            if (card.isFileOpen())
+            {
+                if (card.sdprinting)
+                    MENU_ITEM(function, MSG_PAUSE_PRINT, lcd_sdcard_pause);
+                else
+                    MENU_ITEM(function, MSG_RESUME_PRINT, lcd_sdcard_resume);
+                MENU_ITEM(function, MSG_STOP_PRINT, lcd_sdcard_stop);
+            }else{
+                MENU_ITEM(submenu, MSG_CARD_MENU, lcd_sdcard_menu);
+    #if SDCARDDETECT < 1
+                MENU_ITEM(gcode, MSG_CNG_SDCARD, PSTR("M21"));  // SD-card changed by user
+    #endif
+            }
+        }else{
+            MENU_ITEM(submenu, MSG_NO_CARD, lcd_sdcard_menu);
+    #if SDCARDDETECT < 1
+            MENU_ITEM(gcode, MSG_INIT_SDCARD, PSTR("M21")); // Manually initialize the SD-card via user interface
+    #endif
+        }
+    #endif
+
     if (movesplanned() || IS_SD_PRINTING)
     {
         MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
     }else{
         MENU_ITEM(submenu, MSG_PREPARE, lcd_prepare_menu);
-
     }
     MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
-
-#ifdef SDSUPPORT
-    if (card.cardOK)
-    {
-        if (card.isFileOpen())
-        {
-            if (card.sdprinting)
-                MENU_ITEM(function, MSG_PAUSE_PRINT, lcd_sdcard_pause);
-            else
-                MENU_ITEM(function, MSG_RESUME_PRINT, lcd_sdcard_resume);
-            MENU_ITEM(function, MSG_STOP_PRINT, lcd_sdcard_stop);
-        }else{
-            MENU_ITEM(submenu, MSG_CARD_MENU, lcd_sdcard_menu);
-#if SDCARDDETECT < 1
-            MENU_ITEM(gcode, MSG_CNG_SDCARD, PSTR("M21"));  // SD-card changed by user
-#endif
-        }
-    }else{
-        MENU_ITEM(submenu, MSG_NO_CARD, lcd_sdcard_menu);
-#if SDCARDDETECT < 1
-        MENU_ITEM(gcode, MSG_INIT_SDCARD, PSTR("M21")); // Manually initialize the SD-card via user interface
-#endif
-    }
-#endif
     END_MENU();
 }
 
@@ -387,7 +387,7 @@ static void lcd_tune_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
-    MENU_ITEM_EDIT(int3, MSG_SPEED, &feedmultiply, 10, 999);
+
     MENU_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
 #if TEMP_SENSOR_1 != 0
     MENU_ITEM_EDIT(int3, MSG_NOZZLE1, &target_temperature[1], 0, HEATER_1_MAXTEMP - 15);
@@ -399,6 +399,9 @@ static void lcd_tune_menu()
     MENU_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
 #endif
     //3Dator
+    #ifdef BABYSTEPPING
+        MENU_ITEM(submenu, MSG_BABYSTEP_Z, lcd_babystep_z);
+    #endif
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
 
 
@@ -410,152 +413,20 @@ static void lcd_tune_menu()
 #if TEMP_SENSOR_2 != 0
     MENU_ITEM_EDIT(int3, MSG_FLOW2, &extruder_multiply[2], 10, 999);
 #endif
-
-#ifdef BABYSTEPPING
-    MENU_ITEM(submenu, MSG_BABYSTEP_Z, lcd_babystep_z);
-#endif
 #ifdef FILAMENTCHANGEENABLE
      MENU_ITEM(gcode, MSG_FILAMENTCHANGE, PSTR("M600"));
 #endif
+    MENU_ITEM_EDIT(int3, MSG_SPEED, &feedmultiply, 10, 999);
     END_MENU();
 }
 
-void lcd_preheat_pla0()
+void lcd_preheat_pla()
 {
     setTargetHotend0(plaPreheatHotendTemp);
     setTargetBed(plaPreheatHPBTemp);
     fanSpeed = plaPreheatFanSpeed;
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
-}
-
-void lcd_preheat_abs0()
-{
-    setTargetHotend0(absPreheatHotendTemp);
-    setTargetBed(absPreheatHPBTemp);
-    fanSpeed = absPreheatFanSpeed;
-    lcd_return_to_status();
-    setWatch(); // heater sanity check timer
-}
-
-#if TEMP_SENSOR_1 != 0 //2nd extruder preheat
-void lcd_preheat_pla1()
-{
-    setTargetHotend1(plaPreheatHotendTemp);
-    setTargetBed(plaPreheatHPBTemp);
-    fanSpeed = plaPreheatFanSpeed;
-    lcd_return_to_status();
-    setWatch(); // heater sanity check timer
-}
-
-void lcd_preheat_abs1()
-{
-    setTargetHotend1(absPreheatHotendTemp);
-    setTargetBed(absPreheatHPBTemp);
-    fanSpeed = absPreheatFanSpeed;
-    lcd_return_to_status();
-    setWatch(); // heater sanity check timer
-}
-#endif //2nd extruder preheat
-
-#if TEMP_SENSOR_2 != 0 //3 extruder preheat
-void lcd_preheat_pla2()
-{
-    setTargetHotend2(plaPreheatHotendTemp);
-    setTargetBed(plaPreheatHPBTemp);
-    fanSpeed = plaPreheatFanSpeed;
-    lcd_return_to_status();
-    setWatch(); // heater sanity check timer
-}
-
-void lcd_preheat_abs2()
-{
-    setTargetHotend2(absPreheatHotendTemp);
-    setTargetBed(absPreheatHPBTemp);
-    fanSpeed = absPreheatFanSpeed;
-    lcd_return_to_status();
-    setWatch(); // heater sanity check timer
-}
-#endif //3 extruder preheat
-
-#if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 //more than one extruder present
-void lcd_preheat_pla012()
-{
-    setTargetHotend0(plaPreheatHotendTemp);
-    setTargetHotend1(plaPreheatHotendTemp);
-    setTargetHotend2(plaPreheatHotendTemp);
-    setTargetBed(plaPreheatHPBTemp);
-    fanSpeed = plaPreheatFanSpeed;
-    lcd_return_to_status();
-    setWatch(); // heater sanity check timer
-}
-
-void lcd_preheat_abs012()
-{
-    setTargetHotend0(absPreheatHotendTemp);
-    setTargetHotend1(absPreheatHotendTemp);
-    setTargetHotend2(absPreheatHotendTemp);
-    setTargetBed(absPreheatHPBTemp);
-    fanSpeed = absPreheatFanSpeed;
-    lcd_return_to_status();
-    setWatch(); // heater sanity check timer
-}
-#endif //more than one extruder present
-
-void lcd_preheat_pla_bedonly()
-{
-    setTargetBed(plaPreheatHPBTemp);
-    fanSpeed = plaPreheatFanSpeed;
-    lcd_return_to_status();
-    setWatch(); // heater sanity check timer
-}
-
-void lcd_preheat_abs_bedonly()
-{
-    setTargetBed(absPreheatHPBTemp);
-    fanSpeed = absPreheatFanSpeed;
-    lcd_return_to_status();
-    setWatch(); // heater sanity check timer
-}
-
-static void lcd_preheat_pla_menu()
-{
-    START_MENU();
-    MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
-    MENU_ITEM(function, MSG_PREHEAT_PLA0, lcd_preheat_pla0);
-#if TEMP_SENSOR_1 != 0 //2 extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_PLA1, lcd_preheat_pla1);
-#endif //2 extruder preheat
-#if TEMP_SENSOR_2 != 0 //3 extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_PLA2, lcd_preheat_pla2);
-#endif //3 extruder preheat
-#if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 //all extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_PLA012, lcd_preheat_pla012);
-#endif //2 extruder preheat
-#if TEMP_SENSOR_BED != 0
-    MENU_ITEM(function, MSG_PREHEAT_PLA_BEDONLY, lcd_preheat_pla_bedonly);
-#endif
-    END_MENU();
-}
-
-static void lcd_preheat_abs_menu()
-{
-    START_MENU();
-    MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
-    MENU_ITEM(function, MSG_PREHEAT_ABS0, lcd_preheat_abs0);
-#if TEMP_SENSOR_1 != 0 //2 extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_ABS1, lcd_preheat_abs1);
-#endif //2 extruder preheat
-#if TEMP_SENSOR_2 != 0 //3 extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_ABS2, lcd_preheat_abs2);
-#endif //3 extruder preheat
-#if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 //all extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_ABS012, lcd_preheat_abs012);
-#endif //2 extruder preheat
-#if TEMP_SENSOR_BED != 0
-    MENU_ITEM(function, MSG_PREHEAT_ABS_BEDONLY, lcd_preheat_abs_bedonly);
-#endif
-    END_MENU();
 }
 
 void lcd_cooldown()
@@ -569,36 +440,6 @@ void lcd_cooldown()
     lcd_return_to_status();
 }
 
-static void lcd_prepare_menu()
-{
-    START_MENU();
-    MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
-#ifdef SDSUPPORT
-    #ifdef MENU_ADDAUTOSTART
-      MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
-    #endif
-#endif
-    //3Dator
-    MENU_ITEM(submenu, MSG_NOZZLECHANGE, lcd_control_change_nozzle);
-    MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
-    MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
-    //MENU_ITEM(gcode, MSG_SET_ORIGIN, PSTR("G92 X0 Y0 Z0"));
-    MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
-#if PS_ON_PIN > -1
-    if (powersupply)
-    {
-        MENU_ITEM(gcode, MSG_SWITCH_PS_OFF, PSTR("M81"));
-    }else{
-        MENU_ITEM(gcode, MSG_SWITCH_PS_ON, PSTR("M80"));
-    }
-#endif
-    MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu);
-//3dator
-#ifdef DATOR_TEST
-    MENU_ITEM(submenu, MSG_TEST_MENU, lcd_test_menu);
-#endif
-    END_MENU();
-}
 
 float move_menu_scale;
 static void lcd_move_menu_axis();
@@ -722,7 +563,7 @@ static void lcd_move_e()
 static void lcd_move_menu_axis()
 {
     START_MENU();
-    MENU_ITEM(back, MSG_MOVE_AXIS, lcd_move_menu);
+    MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
     MENU_ITEM(submenu, MSG_MOVE_X, lcd_move_x);
     MENU_ITEM(submenu, MSG_MOVE_Y, lcd_move_y);
     if (move_menu_scale < 10.0)
@@ -733,201 +574,49 @@ static void lcd_move_menu_axis()
     END_MENU();
 }
 
-static void lcd_move_menu_10mm()
-{
-    move_menu_scale = 10.0;
-    lcd_move_menu_axis();
-}
 static void lcd_move_menu_1mm()
 {
     move_menu_scale = 1.0;
     lcd_move_menu_axis();
 }
-static void lcd_move_menu_01mm()
-{
-    move_menu_scale = 0.1;
-    lcd_move_menu_axis();
-}
 
-static void lcd_move_menu()
+static void lcd_prepare_menu()
 {
     START_MENU();
-    MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
-    MENU_ITEM(submenu, MSG_MOVE_10MM, lcd_move_menu_10mm);
-    MENU_ITEM(submenu, MSG_MOVE_1MM, lcd_move_menu_1mm);
-    MENU_ITEM(submenu, MSG_MOVE_01MM, lcd_move_menu_01mm);
-    //TODO:X,Y,Z,E
+    MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
+#ifdef SDSUPPORT
+    #ifdef MENU_ADDAUTOSTART
+      MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
+    #endif
+#endif
+    MENU_ITEM(submenu, MSG_NOZZLECHANGE, lcd_control_change_nozzle);
+    MENU_ITEM(submenu, MSG_SET_Z_OFFSET, lcd_control_set_z_offset);
+    MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
+    MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
+    MENU_ITEM(function, MSG_PREHEAT_PLA, lcd_preheat_pla);
+    MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
+    MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu_1mm);
     END_MENU();
 }
-
-//3Dator
-#ifdef DATOR_TEST
-static void lcd_test_menu()
-{
-	char		ln[64];
-	char 		xmin, xmax, ymin, ymax, zmin, zmax;
-	int		led, fan;
-	static int	last_led, last_fan, queue_led;
-
-
-	// avoid quick timeout
-        refresh_cmd_timeout();
-
-	// by default endstop status is unknown
-	xmin= xmax= ymin= ymax= zmin= zmax= '?';
-
-	// check wether enabled and get status
-# if defined(X_MIN_PIN) && X_MIN_PIN > -1
-	xmin= READ(X_MIN_PIN)+'0';
-# endif
-# if defined(X_MAX_PIN) && X_MAX_PIN > -1
-	xmax= READ(X_MAX_PIN)+'0';
-# endif
-# if defined(Y_MIN_PIN) && Y_MIN_PIN > -1
-	ymin= READ(Y_MIN_PIN)+'0';
-# endif
-# if defined(Y_MAX_PIN) && Y_MAX_PIN > -1
-	ymax= READ(Y_MAX_PIN)+'0';
-# endif
-# if defined(Z_MIN_PIN) && Z_MIN_PIN > -1
-	zmin= READ(Z_MIN_PIN)+'0';
-# endif
-# if defined(Z_MAX_PIN) && Z_MAX_PIN > -1
-	zmax= READ(Z_MAX_PIN)+'0';
-# endif
-
-	// display endstop status
-	sprintf (ln, "X-%c+%c  Y-%c+%c  Z-%c+%c",
-		xmin, xmax, ymin, ymax, zmin, zmax);
-        lcd.setCursor(0, 0);
-	lcd.print(ln);
-
-	// display extruder temperature
-	sprintf (ln, "Ex0:%s Ex1:%s",
-		ftostr31ns(current_temperature[0]),
-# if defined(EXTRUDER) && EXTRUDER > 1
-		ftostr31ns(current_temperature[1]));
-# else
-		"?");
-# endif
-        lcd.setCursor(0, 1);
-	lcd.print(ln);
-
-       	// display heating bed temperature
-	sprintf (ln, "Bed:%s",
-		ftostr31ns(current_temperature_bed));
-	lcd.setCursor(0, 2);
-	lcd.print(ln);
-
-	// LEDs are toggled once a second
-	led= (millis()/1000) % DATOR_NUM_LED;
-
-	// I was not able to run more than 4 GCODE commands within this function
-	// therefore 3 GCODE commands are executed and the next 2 on next entry of this function
-	if (queue_led) {
-		// fourth is blue and fifth off
-		sprintf (ln, "M154 F%d T%d R0 U0 B0",   (last_led+0) % DATOR_NUM_LED, (last_led+0) % DATOR_NUM_LED);
-	       	enquecommand(ln);
-		sprintf (ln, "M154 F%d T%d R0 U0 B255", (last_led+1) % DATOR_NUM_LED, (last_led+1) % DATOR_NUM_LED);
-	       	enquecommand(ln);
-
-		queue_led= 0;
-		return; 	// do not execute any more GCODE commands within this function
-	}
-
-	if (led != last_led) {
-		sprintf (ln, "LED:%02d", (led+4) % DATOR_NUM_LED);
-		lcd.setCursor(10, 2);
-		lcd.print(ln);
-
-		// first is white, than red and green
-		sprintf (ln, "M154 F%d T%d R0 U255 B0", (led+2) % DATOR_NUM_LED, (led+2) % DATOR_NUM_LED);
-        	enquecommand(ln);
-		sprintf (ln, "M154 F%d T%d R255 U0 B0", (led+3) % DATOR_NUM_LED, (led+3) % DATOR_NUM_LED);
-        	enquecommand(ln);
-		sprintf (ln, "M154 F%d T%d R255 U255 B255", (led+4) % DATOR_NUM_LED, (led+4) % DATOR_NUM_LED);
-        	enquecommand(ln);
-		last_led= led;
-
-		queue_led= 1;	// there are move GCODE commands to be executed on next entry of this function
-		return; 	// do not execute any more GCODE commands within this function
-	}
-
-	//* toggle fans every 5 seconds at full speed
-	fan= (millis()/1000/5) % 4;
-	if (fan != last_fan) {
-        	lcd.setCursor(0, 3);
-
-		// there are 4 combinations
-		switch (fan) {
-			case 1:
-				lcd.print("Radial fan");
-        			enquecommand_P(PSTR("M106 S255"));
-        			enquecommand_P(PSTR("M152 S0"));
-				break;
-			case 2:
-				lcd.print("Coldend fan");
-        			enquecommand_P(PSTR("M106 S0"));
-        			enquecommand_P(PSTR("M152 S255"));
-				break;
-			case 3:
-				lcd.print("Both fans  ");
-        			enquecommand_P(PSTR("M106 S255"));
-        			enquecommand_P(PSTR("M152 S255"));
-				break;
-			case 0:
-			default:
-				lcd.print("No fan     ");
-        			enquecommand_P(PSTR("M106 S0"));
-        			enquecommand_P(PSTR("M152 S0"));
-				break;
-		}
-		last_fan= fan;
-	}
-
-	// user tapped button to exit menu
-    	if (LCD_CLICKED)
-    	{
-		// for safety put fans on half speed
-        	enquecommand_P(PSTR("M106 S128"));
-        	enquecommand_P(PSTR("M152 S128"));
-
-		// light on all LED
-		sprintf (ln, "M154 F%d T%d R255 U255 B255", 0, DATOR_NUM_LED-1);
-        	enquecommand(ln);
-
-		// return to last menu
-        	lcd_quick_feedback();
-        	currentMenu = lcd_prepare_menu;
-        	encoderPosition = 0;
-
-		return;
-    	}
-}
-#endif
-
 
 static void lcd_control_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
+    #ifdef EEPROM_SETTINGS
+        MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);
+        MENU_ITEM(function, MSG_LOAD_EPROM, Config_RetrieveSettings);
+    #endif
+    MENU_ITEM(function, MSG_RESTORE_FAILSAFE, Config_ResetDefault);
+    MENU_ITEM(submenu, MSG_LED_MENU, lcd_led_menu);
     MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
     MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
-    //3Dator
-    MENU_ITEM(submenu, MSG_SET_Z_OFFSET, lcd_control_set_z_offset);
 #ifdef DOGLCD
-//    MENU_ITEM_EDIT(int3, MSG_CONTRAST, &lcd_contrast, 0, 63);
     MENU_ITEM(submenu, MSG_CONTRAST, lcd_set_contrast);
 #endif
 #ifdef FWRETRACT
     MENU_ITEM(submenu, MSG_RETRACT, lcd_control_retract_menu);
 #endif
-#ifdef EEPROM_SETTINGS
-    MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);
-    MENU_ITEM(function, MSG_LOAD_EPROM, Config_RetrieveSettings);
-#endif
-    MENU_ITEM(function, MSG_RESTORE_FAILSAFE, Config_ResetDefault);
-    MENU_ITEM(submenu, MSG_LED_MENU, lcd_led_menu);
     MENU_ITEM(submenu, MSG_ABOUT, lcd_about_info);
     END_MENU();
 }
@@ -1412,6 +1101,8 @@ static void menu_action_back(menuFunc_t data)
 }
 static void menu_action_submenu(menuFunc_t data)
 {
+    //always start one below in a submenu to hide the menu back funtion
+    menu_additional_offset = 1;
     currentMenu = data;
     encoderPosition = 0;
 }

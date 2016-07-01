@@ -40,3 +40,11 @@ http://wiki.3dator.com
 
 19.06.2016 (1.0.4.1)
 * bug fixes
+
+24.06.2016 (1.0.4.2)
+* fixes stopping when printhead is decelerating
+* prevent printer to move too fast
+
+01.07.2016 (1.0.5)
+* completly reordered menus
+* entering a submenu, the back menu item will be hidden above

@@ -210,7 +210,7 @@ CardReader card;
 
 //3Dator
 bool fan_on[EXTRUDERS] = {false};
-int inactive_time = millis()/1000;
+long inactive_time = millis()/1000;
 byte save_brightness = 255;
 extern void detect_inactivity();
 bool set_inactive = false;

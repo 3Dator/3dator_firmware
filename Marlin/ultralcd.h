@@ -7,6 +7,7 @@
 
 //3dator
 extern byte led_brightness;
+extern uint32_t encoderPosition;
 
   void lcd_update();
   void lcd_init();

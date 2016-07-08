@@ -7,6 +7,7 @@
 #include "ultralcd.h"
 
 byte led_colors[3] = {255,255,255};
+byte old_brightness = 255;
 
 void SendColors(byte red, byte grn, byte blu, byte prog, byte loops){
   //send information over i2c
@@ -26,7 +27,7 @@ void SendColors(byte red, byte grn, byte blu, byte prog, byte loops){
   }
 }
 
-void SetBrightness(byte brightness){
+byte SetBrightness(byte brightness){
   //send information over i2c
   Wire.beginTransmission(4);
   Wire.write(1);
@@ -36,6 +37,9 @@ void SetBrightness(byte brightness){
   Wire.write(brightness);
   Wire.write(0);
   Wire.endTransmission();
+  byte return_old_brightness = old_brightness;
+  old_brightness = brightness;
+  return return_old_brightness;
 }
 
 

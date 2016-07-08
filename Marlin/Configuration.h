@@ -158,6 +158,9 @@
 
 
 //3Dator
+//time after which the printer will go in an inactive state (saving power and turn off heaters)
+#define INACTIVE_TIME 600
+
 #define FAN_ON_TEMP 50
 extern bool fan_on[EXTRUDERS];
 
@@ -299,15 +302,15 @@ your extruder heater takes 2 minutes to hit the target on heating.
 // uncomment the 2 defines below:
 
 // Parameters for all extruder heaters
-//#define THERMAL_RUNAWAY_PROTECTION_PERIOD 40 //in seconds
-//#define THERMAL_RUNAWAY_PROTECTION_HYSTERESIS 4 // in degree Celsius
+#define THERMAL_RUNAWAY_PROTECTION_PERIOD 60 //in seconds
+#define THERMAL_RUNAWAY_PROTECTION_HYSTERESIS 30 // in degree Celsius
 
 // If you want to enable this feature for your bed heater,
 // uncomment the 2 defines below:
 
 // Parameters for the bed heater
-//#define THERMAL_RUNAWAY_PROTECTION_BED_PERIOD 20 //in seconds
-//#define THERMAL_RUNAWAY_PROTECTION_BED_HYSTERESIS 2 // in degree Celsius
+#define THERMAL_RUNAWAY_PROTECTION_BED_PERIOD 120 //in seconds
+#define THERMAL_RUNAWAY_PROTECTION_BED_HYSTERESIS 5 // in degree Celsius
 //===========================================================================
 
 
@@ -565,7 +568,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
 //#define EEPROM_CHITCHAT
 
 // Preheat Constants
-#define PLA_PREHEAT_HOTEND_TEMP 200
+#define PLA_PREHEAT_HOTEND_TEMP 180
 #define PLA_PREHEAT_HPB_TEMP 40
 #define PLA_PREHEAT_FAN_SPEED 0   // Insert Value between 0 and 255
 

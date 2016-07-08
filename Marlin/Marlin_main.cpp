@@ -210,6 +210,10 @@ CardReader card;
 
 //3Dator
 bool fan_on[EXTRUDERS] = {false};
+int inactive_time = millis()/1000;
+byte save_brightness = 255;
+extern void detect_inactivity();
+bool set_inactive = false;
 
 float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
@@ -635,6 +639,7 @@ void loop()
   manage_inactivity();
   checkHitEndstops();
   lcd_update();
+  detect_inactivity();
 }
 
 void get_command()
@@ -4456,4 +4461,27 @@ bool setTargetedHotend(int code){
     }
   }
   return false;
+}
+
+void detect_inactivity(){
+  if(lcd_clicked() || encoderPosition > 0 || movesplanned() || IS_SD_PRINTING){
+    inactive_time = millis()/1000;
+  }
+  if((millis()/1000 - inactive_time) > INACTIVE_TIME && set_inactive == false){
+    set_inactive = true;
+    save_brightness = SetBrightness(50);
+    disable_heater();
+    SendFanPWM(0);
+    disable_x();
+    disable_y();
+    disable_z();
+    disable_e0();
+    disable_e1();
+    disable_e2();
+    manage_heater();
+  }
+  if(set_inactive == true && (millis()/1000 - inactive_time) <= INACTIVE_TIME){
+    set_inactive = false;
+    SetBrightness(save_brightness);
+  }
 }

@@ -49,6 +49,10 @@ http://wiki.3dator.com
 * completly reordered menus
 * entering a submenu, the back menu item will be hidden above
 
+08.07.2016 (1.0.5)
+* added thermal runaway protection
+* detect inativity after 10 min: dimm LEDs, disable motors, cooldown, stop fan
+
 18.07.2016 (1.1.0)
 * indroducing Dual Extruder support with one nozzle (two nozzles included but still experimental)
-* changed jerk and acceleration to be smoother
+* changed jerk and acceleration to print smoother

@@ -48,3 +48,7 @@ http://wiki.3dator.com
 01.07.2016 (1.0.5)
 * completly reordered menus
 * entering a submenu, the back menu item will be hidden above
+
+18.07.2016 (1.1.0)
+* indroducing Dual Extruder support with one nozzle (two nozzles included but still experimental)
+* changed jerk and acceleration to be smoother

@@ -3727,12 +3727,15 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 
   else if(code_seen('T'))
   {
+    byte old_extruder = tmp_extruder;
     tmp_extruder = code_value();
+    //byte new_extruder = tmp_extruder;
     if(tmp_extruder >= EXTRUDERS) {
       SERIAL_ECHO_START;
       SERIAL_ECHO("T");
       SERIAL_ECHO(tmp_extruder);
       SERIAL_ECHOLN(MSG_INVALID_EXTRUDER);
+      tmp_extruder = old_extruder;
     }
     else {
       boolean make_move = false;

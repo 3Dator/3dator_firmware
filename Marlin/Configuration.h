@@ -24,7 +24,7 @@
 // build by the user have been successfully uploaded into firmware.
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__ // build date and time
 #define STRING_CONFIG_H_AUTHOR "(3Dator GmbH)" // Who made the changes.
-#define STRING_VERSION_NUMBER "1.0.5"
+#define STRING_VERSION_NUMBER "1.1.0"
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
 // This allows the connection of wireless adapters (for instance) to non-default port pins.
@@ -96,13 +96,31 @@
 
 #define DATOR_CONFIG 1
 
+// 0 single extruder
+// 1 dual extruder (experimental: untested)
+// 2 dual extruder with one hotend (virtuel dual)
+// Planned: 3 diamont hotend (3 extruders)
+
+#define DATOR_DUAL 0
+
 
 // Define this to set a unique identifier for this printer, (Used by some programs to differentiate between machines)
 // You can use an online service to generate a random UUID. (eg http://www.uuidgenerator.net/version4)
 // #define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
 
 // This defines the number of extruders
-#define EXTRUDERS 1
+#ifdef DATOR_DUAL == 0
+  #define EXTRUDERS 1
+  #define VIRTUAL_NOZZLES false
+#endif
+#ifdef DATOR_DUAL == 1
+  #define EXTRUDERS 2
+  #define VIRTUAL_NOZZLES false
+#endif
+#ifdef DATOR_DUAL == 2
+  #define EXTRUDERS 2
+  #define VIRTUAL_NOZZLES true
+#endif
 
 //// The following define selects which power supply you have. Please choose the one that matches your setup
 // 1 = ATX
@@ -152,7 +170,7 @@
 // 110 is Pt100 with 1k pullup (non standard)
 
 #define TEMP_SENSOR_0 1
-#define TEMP_SENSOR_1 0
+#define TEMP_SENSOR_1 1
 #define TEMP_SENSOR_2 0
 #define TEMP_SENSOR_BED 5
 
@@ -375,8 +393,8 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
 #define INVERT_Y_DIR true    // for Mendel set to true, for Orca set to false
 #define INVERT_Z_DIR false     // for Mendel set to false, for Orca set to true
 #define INVERT_E0_DIR true   // for direct drive extruder v9 set to true, for geared extruder set to false
-#define INVERT_E1_DIR false    // for direct drive extruder v9 set to true, for geared extruder set to false
-#define INVERT_E2_DIR false   // for direct drive extruder v9 set to true, for geared extruder set to false
+#define INVERT_E1_DIR true    // for direct drive extruder v9 set to true, for geared extruder set to false
+#define INVERT_E2_DIR true   // for direct drive extruder v9 set to true, for geared extruder set to false
 
 // ENDSTOP SETTINGS:
 // Sets direction of endstops when homing; 1=MAX, -1=MIN
@@ -529,7 +547,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
 #define DEFAULT_MAX_FEEDRATE          {350, 350, 30, 100}    // (mm/sec)
 #define DEFAULT_MAX_ACCELERATION      {5000,5000,100,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
 
-#define DEFAULT_ACCELERATION          3000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
+#define DEFAULT_ACCELERATION          2000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
 #define DEFAULT_RETRACT_ACCELERATION  9000   // X, Y, Z and E max acceleration in mm/s^2 for retracts
 
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
@@ -539,7 +557,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
 // #define EXTRUDER_OFFSET_Y {0.0, 5.00}  // (in mm) for each extruder, offset of the hotend on the Y axis
 
 // The speed change that does not require acceleration (i.e. the software might assume it can be done instantaneously)
-#define DEFAULT_XYJERK                20.0    // (mm/sec)
+#define DEFAULT_XYJERK                10.0    // (mm/sec)
 #define DEFAULT_ZJERK                 0.4     // (mm/sec)
 #define DEFAULT_EJERK                 5.0    // (mm/sec)
 

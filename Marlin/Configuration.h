@@ -101,7 +101,7 @@
 // 2 dual extruder with one hotend (virtuel dual)
 // Planned: 3 diamont hotend (3 extruders)
 
-#define DATOR_DUAL 2
+#define DATOR_DUAL 0
 
 
 // Define this to set a unique identifier for this printer, (Used by some programs to differentiate between machines)

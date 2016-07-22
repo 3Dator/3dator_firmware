@@ -568,6 +568,7 @@ void setup()
 
   //3Dator
   Wire.begin();
+  SetBrightness(led_brightness);
   SendColors(255,255,255,3,0);
 
   tp_init();    // Initialize temperature loop
@@ -2486,13 +2487,12 @@ Sigma_Exit:
         #endif //TEMP_RESIDENCY_TIME
         }
         LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
-//        enquecommand_P(PSTR("M150 R255 U50 B00 P0"));
+        SendColors(255,255,255,3,0);
         starttime=millis();
         previous_millis_cmd = millis();
       }
       break;
     case 190: // M190 - Wait for bed heater to reach target.
-//    enquecommand_P(PSTR("M150 R255 U3 B0 P0"));
     SendColors(255,20,0,3,0);
     #if defined(TEMP_BED_PIN) && TEMP_BED_PIN > -1
         LCD_MESSAGEPGM(MSG_BED_HEATING);
@@ -2526,7 +2526,7 @@ Sigma_Exit:
           manage_inactivity();
           lcd_update();
         }
-//        enquecommand_P(PSTR("M150 R255 U50 B00 P0"));
+        SendColors(255,255,255,3,0);
         LCD_MESSAGEPGM(MSG_BED_DONE);
         previous_millis_cmd = millis();
     #endif

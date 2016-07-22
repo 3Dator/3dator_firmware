@@ -197,6 +197,7 @@
 		#define MSG_LED_BLUE "value blue"
 		#define MSG_LED_OFF "LEDs full off"
 		#define MSG_LED_ON "LEDs full on"
+		#define MSG_STATISTICS "Statistics"
 
 // Serial Console Messages
 
@@ -812,6 +813,7 @@
 		#define MSG_LED_BLUE "Blau-Wert"
 		#define MSG_LED_OFF "LEDs komplett aus"
 		#define MSG_LED_ON "LEDs komplett an"
+		#define MSG_STATISTICS "Statistiken"
 
 
 // Serial Console Messages

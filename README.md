@@ -53,6 +53,10 @@ http://wiki.3dator.com
 * added thermal runaway protection
 * detect inativity after 10 min: dimm LEDs, disable motors, cooldown, stop fan
 
-18.07.2016 (1.1.0)
+18.07.2016 (1.1.0) Dual Extrusion update
 * indroducing Dual Extruder support with one nozzle (two nozzles included but still experimental)
 * changed jerk and acceleration to print smoother
+
+22.07.2016 (1.1.1) EEPROM update
+* led brightness can now be stored in EEPROM
+* new statistics menu

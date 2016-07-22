@@ -72,6 +72,7 @@ static void lcd_prepare_menu();
 static void lcd_control_menu();
 //3Dator
 static void lcd_about_info();
+static void lcd_statistics();
 static void lcd_control_set_z_offset();
 static void lcd_control_change_nozzle();
 static void lcd_led_menu();
@@ -287,6 +288,9 @@ static void lcd_sdcard_stop()
 {
     card.sdprinting = false;
     card.closefile();
+    statistics_prints_stopped++;
+    statistics_total_print_time += millis()/60000 - starttime/60000;
+    store_statistics();
     quickStop();
     //3Dator
     st_synchronize();
@@ -618,6 +622,7 @@ static void lcd_control_menu()
 #ifdef FWRETRACT
     MENU_ITEM(submenu, MSG_RETRACT, lcd_control_retract_menu);
 #endif
+    MENU_ITEM(submenu, MSG_STATISTICS, lcd_statistics);
     MENU_ITEM(submenu, MSG_ABOUT, lcd_about_info);
     END_MENU();
 }
@@ -642,6 +647,30 @@ static void lcd_about_info()
         encoderPosition = 0;
         enquecommand_P(PSTR("M150 P10"));
         start_about_info = true;
+    }
+}
+
+static void lcd_statistics()
+{
+    lcd.setCursor(0, 0);
+    lcd_printPGM(PSTR(MSG_STATISTICS));
+    lcd.setCursor(0, 1);
+    lcd_printPGM(PSTR("printtime: "));
+    lcd.print(itostr2(statistics_total_print_time/60));
+    lcd.print(':');
+    lcd.print(itostr2(statistics_total_print_time%60));
+    lcd.setCursor(0, 2);
+    lcd_printPGM(PSTR("Prints stopped: "));
+    lcd.print(statistics_prints_stopped);
+    lcd.setCursor(0, 3);
+    lcd_printPGM(PSTR("Prints finisehed: "));
+    lcd.print(statistics_prints_finished);
+
+    if (LCD_CLICKED)
+    {
+        lcd_quick_feedback();
+        currentMenu = lcd_control_menu;
+        encoderPosition = 0;
     }
 }
 

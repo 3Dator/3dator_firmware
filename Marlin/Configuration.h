@@ -24,7 +24,7 @@
 // build by the user have been successfully uploaded into firmware.
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__ // build date and time
 #define STRING_CONFIG_H_AUTHOR "(3Dator GmbH)" // Who made the changes.
-#define STRING_VERSION_NUMBER "1.1.0"
+#define STRING_VERSION_NUMBER "1.1.1"
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
 // This allows the connection of wireless adapters (for instance) to non-default port pins.
@@ -472,8 +472,13 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
       #define ABL_PROBE_PT_1_X 10
       #define ABL_PROBE_PT_1_Y 0
       #define ABL_PROBE_PT_2_X X_MAX_LENGTH/2
-      #define ABL_PROBE_PT_2_Y Y_MAX_LENGTH-50
-      #define ABL_PROBE_PT_3_X X_MAX_LENGTH-20
+      #if DATOR_CONFIG == 1
+        #define ABL_PROBE_PT_2_Y Y_MAX_LENGTH-50
+        #define ABL_PROBE_PT_3_X X_MAX_LENGTH-20
+      #else
+        #define ABL_PROBE_PT_2_Y Y_MAX_LENGTH-5
+        #define ABL_PROBE_PT_3_X X_MAX_LENGTH-2
+      #endif
       #define ABL_PROBE_PT_3_Y 0
 
 

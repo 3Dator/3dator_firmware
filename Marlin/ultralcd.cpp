@@ -323,6 +323,10 @@ static void lcd_main_menu()
     START_MENU();
     MENU_ITEM(back, MSG_WATCH, lcd_status_screen);
 
+    if (movesplanned() || IS_SD_PRINTING){
+        MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
+    }
+
     #ifdef SDSUPPORT
         if (card.cardOK)
         {
@@ -346,13 +350,10 @@ static void lcd_main_menu()
     #endif
         }
     #endif
-
-    if (movesplanned() || IS_SD_PRINTING)
-    {
-        MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
-    }else{
+    if (!movesplanned() && !IS_SD_PRINTING){
         MENU_ITEM(submenu, MSG_PREPARE, lcd_prepare_menu);
     }
+
     MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
     END_MENU();
 }
@@ -860,6 +861,8 @@ static void lcd_control_temperature_menu()
 #endif
 #if TEMP_SENSOR_2 != 0
     MENU_ITEM_EDIT(int3, MSG_NOZZLE2, &target_temperature[2], 0, HEATER_2_MDATOR_DUAL
+#endif
+#if TEMP_SENSOR_BED != 0
     MENU_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
 #endif
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);

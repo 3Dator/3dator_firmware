@@ -213,7 +213,10 @@ bool fan_on[EXTRUDERS] = {false};
 long inactive_time = millis()/1000;
 byte save_brightness = 255;
 extern void detect_inactivity();
+extern void show_heat_led();
 bool set_inactive = false;
+byte led_display_right = 0;
+byte led_display_left = 0;
 
 float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
@@ -641,6 +644,8 @@ void loop()
   checkHitEndstops();
   lcd_update();
   detect_inactivity();
+  //will need a bit more testing
+  //show_heat_led();
 }
 
 void get_command()
@@ -2532,7 +2537,6 @@ Sigma_Exit:
     #endif
         break;
 
-    #if defined(FAN_PIN) && FAN_PIN > -1
       //3Dator
       case 106: //M106 Fan On
       {
@@ -2552,7 +2556,6 @@ Sigma_Exit:
       }
       break;
 
-    #endif //FAN_PIN
     #ifdef BARICUDA
       // PWM for HEATER_1_PIN
       #if defined(HEATER_1_PIN) && HEATER_1_PIN > -1
@@ -4486,5 +4489,24 @@ void detect_inactivity(){
   if(set_inactive == true && (millis()/1000 - inactive_time) <= INACTIVE_TIME){
     set_inactive = false;
     SetBrightness(save_brightness);
+  }
+}
+
+void show_heat_led(){
+  byte led_display_right_buffer = led_display_right;
+  byte led_display_left_buffer = led_display_left;
+  led_display_right = (degBed()-25)/8.0;
+  led_display_left = (degHotend(0)-30)/50.0;
+  if(led_display_right_buffer != led_display_right){
+    SendStopOverwriteRange(30,54);
+    delay(1);
+    SendOverwriteRange(54-led_display_right, 54, 255, 0, 0);
+    delay(1);
+  }
+  if(led_display_left_buffer != led_display_left){
+    SendStopOverwriteRange(0,20);
+    delay(1);
+    SendOverwriteRange(0, led_display_left, 255, 0, 0);
+    delay(1);
   }
 }

@@ -60,3 +60,10 @@ http://wiki.3dator.com
 22.07.2016 (1.1.1) EEPROM update
 * led brightness can now be stored in EEPROM
 * new statistics menu
+
+31.07.2016 (1.1.2) bug fixes
+* increased time before printer goes into inactive mode (now 16 min.)
+* fixed bug that top fan won't start with g
+* started adding red indication lights if the hotend and bed is hot
+* renamed struct that was priviously declared in stdio libary
+* fixed bug that bed temperature could not be changed while not printing

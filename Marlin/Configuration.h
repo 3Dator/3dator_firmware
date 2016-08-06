@@ -24,7 +24,7 @@
 // build by the user have been successfully uploaded into firmware.
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__ // build date and time
 #define STRING_CONFIG_H_AUTHOR "(3Dator GmbH)" // Who made the changes.
-#define STRING_VERSION_NUMBER "1.1.2"
+#define STRING_VERSION_NUMBER "1.1.3"
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
 // This allows the connection of wireless adapters (for instance) to non-default port pins.
@@ -109,15 +109,15 @@
 // #define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
 
 // This defines the number of extruders
-#ifdef DATOR_DUAL == 0
+#if DATOR_DUAL == 0
   #define EXTRUDERS 1
   #define VIRTUAL_NOZZLES false
 #endif
-#ifdef DATOR_DUAL == 1
+#if DATOR_DUAL == 1
   #define EXTRUDERS 2
   #define VIRTUAL_NOZZLES false
 #endif
-#ifdef DATOR_DUAL == 2
+#if DATOR_DUAL == 2
   #define EXTRUDERS 2
   #define VIRTUAL_NOZZLES true
 #endif
@@ -157,6 +157,7 @@
 // 13 is 100k Hisens 3950  1% up to 300°C for hotend "Simple ONE " & "Hotend "All In ONE"
 // 20 is the PT100 circuit found in the Ultimainboard V2.x
 // 60 is 100k Maker's Tool Works Kapton Bed Thermistor beta=3950
+// 66 High-temperature NTC thermistor for DYZE DESIGN HotEnd
 //
 //    1k ohm pullup tables - This is not normal, you would have to have changed out your 4.7k for 1k
 //                          (but gives greater accuracy and more stable PID)
@@ -393,7 +394,8 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
 #define INVERT_Y_DIR true    // for Mendel set to true, for Orca set to false
 #define INVERT_Z_DIR false     // for Mendel set to false, for Orca set to true
 #define INVERT_E0_DIR true   // for direct drive extruder v9 set to true, for geared extruder set to false
-#define INVERT_E1_DIR true    // for direct drive extruder v9 set to true, for geared extruder set to false
+//3dator: if you are using the mirrored extruder set this to false
+#define INVERT_E1_DIR false    // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E2_DIR true   // for direct drive extruder v9 set to true, for geared extruder set to false
 
 // ENDSTOP SETTINGS:
@@ -412,7 +414,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
   #define X_MIN_POS 0
   #define Y_MAX_POS 180
   #define Y_MIN_POS 0
-  #define Z_MAX_POS 269
+  #define Z_MAX_POS 260
   #define Z_MIN_POS 0
 #endif
 

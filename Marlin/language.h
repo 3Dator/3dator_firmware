@@ -198,6 +198,9 @@
 		#define MSG_LED_OFF "LEDs full off"
 		#define MSG_LED_ON "LEDs full on"
 		#define MSG_STATISTICS "Statistics"
+		#define MSG_PRINT_TIME "printtime"
+		#define MSG_PRINTS_STOPPED "Prints stopped"
+		#define MSG_PRINTS_FINISHED "Prints finished"
 
 // Serial Console Messages
 
@@ -814,6 +817,9 @@
 		#define MSG_LED_OFF "LEDs komplett aus"
 		#define MSG_LED_ON "LEDs komplett an"
 		#define MSG_STATISTICS "Statistiken"
+		#define MSG_PRINT_TIME "Druckzeit"
+		#define MSG_PRINTS_STOPPED "Drucke gestoppt"
+		#define MSG_PRINTS_FINISHED "Fertige Drucke"
 
 
 // Serial Console Messages

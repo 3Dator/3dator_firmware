@@ -377,30 +377,6 @@ static void lcd_implementation_status_screen()
     int tHotend=int(degHotend(0) + 0.5);
     int tTarget=int(degTargetHotend(0) + 0.5);
 
-#if LCD_WIDTH < 20
-    lcd.setCursor(0, 0);
-    lcd.print(itostr3(tHotend));
-    lcd.print('/');
-    lcd.print(itostr3left(tTarget));
-
-# if EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
-    //If we have an 2nd extruder or heated bed, show that in the top right corner
-    lcd.setCursor(8, 0);
-#  if EXTRUDERS > 1 && !VIRTUAL_NOZZLES
-    tHotend = int(degHotend(1) + 0.5);
-    tTarget = int(degTargetHotend(1) + 0.5);
-    lcd.print(LCD_STR_THERMOMETER[0]);
-#  else//Heated bed
-    tHotend=int(degBed() + 0.5);
-    tTarget=int(degTargetBed() + 0.5);
-    lcd.print(LCD_STR_BEDTEMP[0]);
-#  endif
-    lcd.print(itostr3(tHotend));
-    lcd.print('/');
-    lcd.print(itostr3left(tTarget));
-# endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
-
-#else//LCD_WIDTH > 19
     lcd.setCursor(0, 0);
     lcd.print(LCD_STR_THERMOMETER[0]);
     lcd.print(itostr3(tHotend));
@@ -413,7 +389,7 @@ static void lcd_implementation_status_screen()
 # if EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
     //If we have an 2nd extruder or heated bed, show that in the top right corner
     lcd.setCursor(10, 0);
-#  if EXTRUDERS > 1 && !VIRTUAL_NOZZLES
+#if EXTRUDERS > 1 && VIRTUAL_NOZZLES == false
     tHotend = int(degHotend(1) + 0.5);
     tTarget = int(degTargetHotend(1) + 0.5);
     lcd.print(LCD_STR_THERMOMETER[0]);
@@ -429,35 +405,10 @@ static void lcd_implementation_status_screen()
     if (tTarget < 10)
         lcd.print(' ');
 # endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
-#endif//LCD_WIDTH > 19
 
 #if LCD_HEIGHT > 2
 //Lines 2 for 4 line LCD
-# if LCD_WIDTH < 20
-#  ifdef SDSUPPORT
-    lcd.setCursor(0, 2);
-    lcd_printPGM(PSTR("SD"));
-    if (IS_SD_PRINTING)
-        lcd.print(itostr3(card.percentDone()));
-    else
-        lcd_printPGM(PSTR("---"));
-    lcd.print('%');
-#  endif//SDSUPPORT
-# else//LCD_WIDTH > 19
-#  if EXTRUDERS > 1 && TEMP_SENSOR_BED != 0 && !VIRTUAL_NOZZLES
-    //If we both have a 2nd extruder and a heated bed, show the heated bed temp on the 2nd line on the left, as the first line is filled with extruder temps
-    tHotend=int(degBed() + 0.5);
-    tTarget=int(degTargetBed() + 0.5);
 
-    lcd.setCursor(0, 1);
-    lcd.print(LCD_STR_BEDTEMP[0]);
-    lcd.print(itostr3(tHotend));
-    lcd.print('/');
-    lcd.print(itostr3left(tTarget));
-    lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
-    if (tTarget < 10)
-        lcd.print(' ');
-#  else
     lcd.setCursor(0,1);
     // 3dator
     lcd_printPGM(PSTR("left: "));
@@ -473,11 +424,25 @@ static void lcd_implementation_status_screen()
     }else{
         lcd_printPGM(PSTR("--:--"));
     }
-#  endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
-# endif//LCD_WIDTH > 19
+    #if EXTRUDERS > 1 && TEMP_SENSOR_BED != 0 && VIRTUAL_NOZZLES == false
+        //If we both have a 2nd extruder and a heated bed, show the heated bed temp on the 2nd line on the left, as the first line is filled with extruder temps
+        tHotend=int(degBed() + 0.5);
+        tTarget=int(degTargetBed() + 0.5);
+
+        lcd.setCursor(LCD_WIDTH - 8, 1);
+        lcd.print(LCD_STR_BEDTEMP[0]);
+        lcd.print(itostr3(tHotend));
+        lcd.print('/');
+        lcd.print(itostr3left(tTarget));
+        lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+        if (tTarget < 10)
+            lcd.print(' ');
+    #else
+
     lcd.setCursor(LCD_WIDTH - 8, 1);
     lcd.print('Z');
     lcd.print(ftostr32(current_position[Z_AXIS] + 0.00001));
+    #endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
 #endif//LCD_HEIGHT > 2
 
 #if LCD_HEIGHT > 3

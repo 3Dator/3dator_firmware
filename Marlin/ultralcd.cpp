@@ -656,15 +656,18 @@ static void lcd_statistics()
     lcd.setCursor(0, 0);
     lcd_printPGM(PSTR(MSG_STATISTICS));
     lcd.setCursor(0, 1);
-    lcd_printPGM(PSTR("printtime: "));
+    lcd_printPGM(PSTR(MSG_PRINT_TIME));
+    lcd.print(':');
     lcd.print(itostr2(statistics_total_print_time/60));
     lcd.print(':');
     lcd.print(itostr2(statistics_total_print_time%60));
     lcd.setCursor(0, 2);
-    lcd_printPGM(PSTR("Prints stopped: "));
+    lcd_printPGM(PSTR(MSG_PRINTS_STOPPED));
+    lcd.print(':');
     lcd.print(statistics_prints_stopped);
     lcd.setCursor(0, 3);
-    lcd_printPGM(PSTR("Prints finisehed: "));
+    lcd_printPGM(PSTR(MSG_PRINTS_FINISHED));
+    lcd.print(':');
     lcd.print(statistics_prints_finished);
 
     if (LCD_CLICKED)
@@ -679,10 +682,13 @@ static void lcd_control_set_z_offset()
 {
     if(!homing_for_z_offset_done){
         lcd_implementation_draw(PSTR("Preparing Z Offset"));
-        enquecommand_P(PSTR("G28 X Y"));
-        enquecommand_P(PSTR("G28 Z"));
-        enquecommand_P(PSTR("G30"));
-        SendColors(25,255,20,3,0);
+        enquecommand_P(PSTR("G28"));
+        //dual has no z-min endstop
+        #if DATOR_DUAL == 1
+          enquecommand_P(PSTR("G1 Z0"));
+        #else
+          enquecommand_P(PSTR("G30"));
+        #endif
         enquecommand_P(PSTR("G92 Z"));
         homing_for_z_offset_done = true;
         zprobe_zoffset = 0;
@@ -704,14 +710,13 @@ static void lcd_control_set_z_offset()
             lcd_quick_feedback();
             enquecommand_P(PSTR("M500"));
             enquecommand_P(PSTR("G28 Z"));
-            SendColors(255,255,255,3,0);
             currentMenu = lcd_control_menu;
             homing_for_z_offset_done = false;
             encoderPosition = 0;
         }
     }
 }
-//3Dator
+
 static void lcd_control_change_nozzle()
 {
     enquecommand_P(PSTR("M109 S200"));
@@ -860,7 +865,7 @@ static void lcd_control_temperature_menu()
     MENU_ITEM_EDIT(int3, MSG_NOZZLE1, &target_temperature[1], 0, HEATER_1_MAXTEMP - 15);
 #endif
 #if TEMP_SENSOR_2 != 0
-    MENU_ITEM_EDIT(int3, MSG_NOZZLE2, &target_temperature[2], 0, HEATER_2_MDATOR_DUAL
+    MENU_ITEM_EDIT(int3, MSG_NOZZLE2, &target_temperature[2], 0, HEATER_2_MAXTEMP - 15);
 #endif
 #if TEMP_SENSOR_BED != 0
     MENU_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);

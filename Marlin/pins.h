@@ -656,11 +656,12 @@
     #define LED_PIN            13
   #endif
 
+  //3dator
   #if MOTHERBOARD == 33 || MOTHERBOARD == 35 || MOTHERBOARD == 67 || MOTHERBOARD == 68
-    #if DATOR_DUAL != 1
-      #define FAN_PIN            -1 // (Sprinter config)
+    #if DATOR_DUAL == 1
+      #define FAN_PIN            -1 // fan_cannot be connected
     #else
-      #define FAN_PIN            9 // (Sprinter config)
+      #define FAN_PIN            9 // fan can be connected at pin 9
     #endif
   #else
     #define FAN_PIN            4 // IO pin. Buffer needed

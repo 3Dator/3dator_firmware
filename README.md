@@ -67,3 +67,9 @@ http://wiki.3dator.com
 * started adding red indication lights if the hotend and bed is hot
 * renamed struct that was priviously declared in stdio libary
 * fixed bug that bed temperature could not be changed while not printing
+
+08.08.2016 (1.1.3) "real" Dual Extruder
+* now supporting actual dual extrusion with two nozzles and two heaters
+* added translations for statistics menu
+* added support for DYZE DESIGN HotEnd
+* cleaned ultra lcd impementation from unused code

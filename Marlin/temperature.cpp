@@ -494,7 +494,7 @@ void manage_heater()
 
     //3Dator turn fan speed on for cooling hotend when it gets hot
     if(current_temperature[e] >= FAN_ON_TEMP && fan_on[e] == false){
-      SendRearFanPWM(120);
+      SendRearFanPWM(REAR_FAN_POWER);
       fan_on[e] = true;
     }
     if(current_temperature[e] < FAN_ON_TEMP && fan_on[e] == true){

@@ -293,9 +293,11 @@ static void lcd_sdcard_stop()
     store_statistics();
     quickStop();
     //3Dator
+    //attempt to fix no homing when pressing stop
+    delay(10);
     st_synchronize();
+
     enquecommand_P(PSTR("G28"));
-    enquecommand_P(PSTR("M84"));
     lcdDrawUpdate = 1;
     currentMenu = lcd_status_screen;
     encoderPosition = 0;
@@ -305,13 +307,8 @@ static void lcd_sdcard_stop()
     setTargetBed(0);
     fanSpeed = 0;
     SendFanPWM(fanSpeed);
-    //cooldown faster
-    SendRearFanPWM(200);
-
-    if(SD_FINISHED_STEPPERRELEASE)
-    {
-        enquecommand_P(PSTR(SD_FINISHED_RELEASECOMMAND));
-    }
+    //steppers off
+    enquecommand_P(PSTR(SD_FINISHED_RELEASECOMMAND));
     autotempShutdown();
 
     lcd_setstatus(WELCOME_MSG);

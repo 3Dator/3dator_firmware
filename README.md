@@ -73,3 +73,6 @@ http://wiki.3dator.com
 * added translations for statistics menu
 * added support for DYZE DESIGN HotEnd
 * cleaned ultra lcd impementation from unused code
+
+20.08.2016 (1.1.4) bugfixes
+* minor bug fixes and improvements

@@ -9,6 +9,18 @@
 byte led_colors[3] = {255,255,255};
 byte old_brightness = 255;
 
+void SendColorsInstant(byte red, byte grn, byte blu){
+  //send information over i2c
+  Wire.beginTransmission(4);
+  Wire.write(1);
+  Wire.write(2);
+  Wire.write(red);
+  Wire.write(grn);
+  Wire.write(blu);
+  Wire.write(0);
+  Wire.endTransmission();
+}
+
 void SendColors(byte red, byte grn, byte blu, byte prog, byte loops){
   //send information over i2c
   Wire.beginTransmission(4);
@@ -25,6 +37,7 @@ void SendColors(byte red, byte grn, byte blu, byte prog, byte loops){
     led_colors[1] = grn;
     led_colors[2] = blu;
   }
+  SendColorsInstant(led_colors[0], led_colors[1], led_colors[2]);
 }
 
 byte SetBrightness(byte brightness){
@@ -81,6 +94,7 @@ void SendOverwriteRange(byte from, byte to, byte red, byte grn, byte blu){
   Wire.write(grn);
   Wire.write(blu);
   Wire.endTransmission();
+  SendColorsInstant(led_colors[0], led_colors[1], led_colors[2]);
 }
 void SendStopOverwriteRange(byte from, byte to){
   //send information over i2c

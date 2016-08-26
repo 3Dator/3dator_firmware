@@ -61,8 +61,6 @@
 #include <SPI.h>
 #endif
 
-#define VERSION_STRING  "1.0.0"
-
 // look here for descriptions of G-codes: http://linuxcnc.org/handbook/gcode/g-code.html
 // http://objects.reprap.org/wiki/Mendel_User_Manual:_RepRapGCodes
 
@@ -214,9 +212,12 @@ long inactive_time = millis()/1000;
 byte save_brightness = 255;
 extern void detect_inactivity();
 extern void show_heat_led();
+extern void perform_print_started();
+extern void perform_print_finished();
 bool set_inactive = false;
 byte led_display_right = 0;
 byte led_display_left = 0;
+bool print_finished = true;
 
 float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
@@ -544,7 +545,7 @@ void setup()
   MCUSR=0;
 
   SERIAL_ECHOPGM(MSG_MARLIN);
-  SERIAL_ECHOLNPGM(VERSION_STRING);
+  SERIAL_ECHOLNPGM(STRING_VERSION_NUMBER);
   #ifdef STRING_VERSION_CONFIG_H
     #ifdef STRING_CONFIG_H_AUTHOR
       SERIAL_ECHO_START;
@@ -582,7 +583,6 @@ void setup()
   servo_init();
 
   lcd_init();
-  _delay_ms(1000);	// wait 1sec to display the splash screen
 
   #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
     SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
@@ -645,7 +645,12 @@ void loop()
   lcd_update();
   detect_inactivity();
   //will need a bit more testing
-  //show_heat_led();
+  show_heat_led();
+  //check if print has finished
+  //all moves longer as 1 min are considered as a print
+  if(millis()/60000 - starttime/60000 > 1 && (!movesplanned() || !IS_SD_PRINTING) && !print_finished){
+    perform_print_finished();
+  }
 }
 
 void get_command()
@@ -782,7 +787,6 @@ void get_command()
        serial_count >= (MAX_CMD_SIZE - 1)||n==-1)
     {
       if(card.eof()){
-        stoptime=millis();
         lcd_setstatus(WELCOME_MSG);
         card.printingHasFinished();
         card.checkautostart(true);
@@ -1917,7 +1921,7 @@ void process_commands()
       break;
     case 24: //M24 - Start SD print
       card.startFileprint();
-      starttime=millis();
+      if(print_finished) perform_print_started();
       break;
     case 25: //M25 - Pause SD print
       card.pauseSDPrint();
@@ -1987,7 +1991,7 @@ void process_commands()
             card.setIndex(code_value_long());
         card.startFileprint();
         if(!call_procedure)
-          starttime=millis(); //procedure calls count as normal print time.
+          if(print_finished) perform_print_started(); //procedure calls count as normal print time.
       }
     } break;
     case 928: //M928 - Start SD write
@@ -2004,9 +2008,8 @@ void process_commands()
 
     case 31: //M31 take time since the start of the SD print or an M109 command
       {
-      stoptime=millis();
       char time[30];
-      unsigned long t=(stoptime-starttime)/1000;
+      unsigned long t=(millis()-starttime)/1000;
       int sec,min;
       min=t/60;
       sec=t%60;
@@ -2493,7 +2496,7 @@ Sigma_Exit:
         }
         LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
         SendColors(255,255,255,3,0);
-        starttime=millis();
+        if(print_finished) perform_print_started();
         previous_millis_cmd = millis();
       }
       break;
@@ -2513,7 +2516,7 @@ Sigma_Exit:
         cancel_heatup = false;
         target_direction = isHeatingBed(); // true if heating, false if cooling
 
-        while ( (target_direction)&&(!cancel_heatup) ? (isHeatingBed()) : (isCoolingBed()&&(CooldownNoWait==false)) )
+        while ((target_direction)&&(!cancel_heatup) ? (isHeatingBed()) : (isCoolingBed()&&(CooldownNoWait==false)) )
         {
           if(( millis() - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up.
           {
@@ -4497,16 +4500,24 @@ void show_heat_led(){
   byte led_display_left_buffer = led_display_left;
   led_display_right = (degBed()-25)/8.0;
   led_display_left = (degHotend(0)-30)/50.0;
-  if(led_display_right_buffer != led_display_right){
-    SendStopOverwriteRange(30,54);
-    delay(1);
-    SendOverwriteRange(54-led_display_right, 54, 255, 0, 0);
-    delay(1);
-  }
-  if(led_display_left_buffer != led_display_left){
-    SendStopOverwriteRange(0,20);
-    delay(1);
+  if(led_display_left_buffer != led_display_left || led_display_right_buffer != led_display_right){
+    SendStopOverwriteRange(0,54);
     SendOverwriteRange(0, led_display_left, 255, 0, 0);
-    delay(1);
+    SendOverwriteRange(54-led_display_right, 54, 255, 0, 0);
   }
+}
+
+//functions that get once called a print started and once it is done
+void perform_print_started(){
+  starttime = millis();
+  stoptime = 0;
+  print_finished = false;
+}
+
+void perform_print_finished(){
+  statistics_total_print_time += millis()/60000 - starttime/60000;
+  statistics_prints_finished++;
+  store_statistics();
+  stoptime=millis();
+  print_finished = true;
 }

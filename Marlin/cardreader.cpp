@@ -615,9 +615,6 @@ void CardReader::updir()
 void CardReader::printingHasFinished()
 {
     st_synchronize();
-    statistics_total_print_time += millis()/60000 - starttime/60000;
-    statistics_prints_finished++;
-    store_statistics();
     if(file_subcall_ctr>0) //heading up to a parent file that called current as a procedure.
     {
       file.close();

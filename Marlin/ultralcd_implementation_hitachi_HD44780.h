@@ -409,23 +409,20 @@ static void lcd_implementation_status_screen()
 #if LCD_HEIGHT > 2
 //Lines 2 for 4 line LCD
 
+// 3dator
+if(starttime != 0 and card.percentDoneFloat() > 0.3){
     lcd.setCursor(0,1);
-    // 3dator
     lcd_printPGM(PSTR("left: "));
-    if(starttime != 0 and card.percentDoneFloat() > 0.3)
-    {
-        uint16_t time_secs = millis()/1000 - starttime/1000;
-        float timeperpercent = time_secs / card.percentDoneFloat();
-        float percentleft = 100 - card.percentDoneFloat();
-        uint16_t time_left = (percentleft * timeperpercent)/60;
-        lcd.print(itostr2(time_left/60));
-        lcd.print(':');
-        lcd.print(itostr2(time_left%60));
-    }else{
-        lcd_printPGM(PSTR("--:--"));
-    }
+      uint16_t time_secs = millis()/1000 - starttime/1000;
+      float timeperpercent = time_secs / card.percentDoneFloat();
+      float percentleft = 100 - card.percentDoneFloat();
+      uint16_t time_left = (percentleft * timeperpercent)/60;
+      lcd.print(itostr2(time_left/60));
+      lcd.print(':');
+      lcd.print(itostr2(time_left%60));
+}
     #if EXTRUDERS > 1 && TEMP_SENSOR_BED != 0 && VIRTUAL_NOZZLES == false
-        //If we both have a 2nd extruder and a heated bed, show the heated bed temp on the 2nd line on the left, as the first line is filled with extruder temps
+        //If we both have a 2nd extruder and a heated bed, show the heated bed temp on the 2nd line on the right, as the first line is filled with extruder temps
         tHotend=int(degBed() + 0.5);
         tTarget=int(degTargetBed() + 0.5);
 
@@ -437,40 +434,37 @@ static void lcd_implementation_status_screen()
         lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
         if (tTarget < 10)
             lcd.print(' ');
-    #else
-
-    lcd.setCursor(LCD_WIDTH - 8, 1);
-    lcd.print('Z');
-    lcd.print(ftostr32(current_position[Z_AXIS] + 0.00001));
     #endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
 #endif//LCD_HEIGHT > 2
 
 #if LCD_HEIGHT > 3
-    lcd.setCursor(0, 2);
-    lcd.print(LCD_STR_FEEDRATE[0]);
-    lcd.print(itostr3(feedmultiply));
-    lcd.print('%');
+    if(movesplanned() || IS_SD_PRINTING || feedmultiply != 100){
+      lcd.setCursor(0, 2);
+      lcd.print(LCD_STR_FEEDRATE[0]);
+      lcd.print(itostr3(feedmultiply));
+      lcd.print('%');
+    }
 # if LCD_WIDTH > 19
 #  ifdef SDSUPPORT
-    lcd.setCursor(7, 2);
-    lcd_printPGM(PSTR("SD"));
-    if (IS_SD_PRINTING)
-        lcd.print(itostr3(card.percentDone()));
-    else
-        lcd_printPGM(PSTR("---"));
-    lcd.print('%');
+    if (IS_SD_PRINTING){
+      lcd.setCursor(7, 2);
+      lcd_printPGM(PSTR("SD"));
+      lcd.print(itostr3(card.percentDone()));
+      lcd.print('%');
+    }
 #  endif//SDSUPPORT
 # endif//LCD_WIDTH > 19
-    lcd.setCursor(LCD_WIDTH - 6, 2);
-    lcd.print(LCD_STR_CLOCK[0]);
+
     if(starttime != 0)
     {
+        lcd.setCursor(LCD_WIDTH - 6, 2);
+        lcd.print(LCD_STR_CLOCK[0]);
+
         uint16_t time = millis()/60000 - starttime/60000;
+
         lcd.print(itostr2(time/60));
         lcd.print(':');
         lcd.print(itostr2(time%60));
-    }else{
-        lcd_printPGM(PSTR("--:--"));
     }
 #endif
 

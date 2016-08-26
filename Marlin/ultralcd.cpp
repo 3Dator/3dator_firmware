@@ -286,18 +286,18 @@ static void lcd_sdcard_resume()
 
 static void lcd_sdcard_stop()
 {
+    quickStop();
     card.sdprinting = false;
     card.closefile();
     statistics_prints_stopped++;
     statistics_total_print_time += millis()/60000 - starttime/60000;
-    store_statistics();
-    quickStop();
-    //3Dator
-    //attempt to fix no homing when pressing stop
-    delay(10);
-    st_synchronize();
 
-    enquecommand_P(PSTR("G28"));
+    store_statistics();
+    //3Dator
+    st_synchronize();
+    feedmultiply = 100;
+    cancel_heatup = true;
+    starttime = 0;
     lcdDrawUpdate = 1;
     currentMenu = lcd_status_screen;
     encoderPosition = 0;
@@ -307,11 +307,13 @@ static void lcd_sdcard_stop()
     setTargetBed(0);
     fanSpeed = 0;
     SendFanPWM(fanSpeed);
-    //steppers off
-    enquecommand_P(PSTR(SD_FINISHED_RELEASECOMMAND));
+
     autotempShutdown();
 
     lcd_setstatus(WELCOME_MSG);
+    enquecommand_P(PSTR("G28"));
+    //steppers off
+    enquecommand_P(PSTR(SD_FINISHED_RELEASECOMMAND));
 }
 
 /* Menu implementation */
@@ -597,6 +599,7 @@ static void lcd_prepare_menu()
     MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
     MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
     MENU_ITEM(function, MSG_PREHEAT_PLA, lcd_preheat_pla);
+    MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
     MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
     MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu_1mm);
     END_MENU();
@@ -612,7 +615,6 @@ static void lcd_control_menu()
     #endif
     MENU_ITEM(function, MSG_RESTORE_FAILSAFE, Config_ResetDefault);
     MENU_ITEM(submenu, MSG_LED_MENU, lcd_led_menu);
-    MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
     MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
 #ifdef DOGLCD
     MENU_ITEM(submenu, MSG_CONTRAST, lcd_set_contrast);

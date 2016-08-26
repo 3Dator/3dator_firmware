@@ -76,3 +76,13 @@ http://wiki.3dator.com
 
 20.08.2016 (1.1.4) bugfixes
 * minor bug fixes and improvements
+
+26.08.2016 (1.1.5)
+* new red led indication light if nozzle or hotend is warm
+* moved temperature menu to prepare menu
+* feedrate now gets reset after every print
+* added a function that gets called when a print is started and one when it is finished
+* removed all unused items from status screen
+* completly removed z height from status menu
+* hard fix for wrong color after sending snake
+* fixed bug that when heating up print can be stopped as expected

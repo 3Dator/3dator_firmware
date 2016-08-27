@@ -598,8 +598,8 @@ static void lcd_prepare_menu()
     MENU_ITEM(submenu, MSG_SET_Z_OFFSET, lcd_control_set_z_offset);
     MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
     MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
-    MENU_ITEM(function, MSG_PREHEAT_PLA, lcd_preheat_pla);
     MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
+    MENU_ITEM(function, MSG_PREHEAT_PLA, lcd_preheat_pla);
     MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
     MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu_1mm);
     END_MENU();

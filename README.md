@@ -78,7 +78,6 @@ http://wiki.3dator.com
 * minor bug fixes and improvements
 
 26.08.2016 (1.1.5)
-* new red led indication light if nozzle or hotend is warm
 * moved temperature menu to prepare menu
 * feedrate now gets reset after every print
 * added a function that gets called when a print is started and one when it is finished

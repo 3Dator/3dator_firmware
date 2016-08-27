@@ -645,7 +645,7 @@ void loop()
   lcd_update();
   detect_inactivity();
   //will need a bit more testing
-  show_heat_led();
+  //show_heat_led();
   //check if print has finished
   //all moves longer as 1 min are considered as a print
   if(millis()/60000 - starttime/60000 > 1 && (!movesplanned() || !IS_SD_PRINTING) && !print_finished){

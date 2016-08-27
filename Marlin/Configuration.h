@@ -89,38 +89,10 @@
 // Define this to set a custom name for your generic Mendel,
 #define CUSTOM_MENDEL_NAME "3Dator"
 
-//3Dator
-// Here are some predefined configs for different 3Dator Configurations
-// 1 3Dator Kit from 3Dator.com
-// 2 3Dator Mini
-
-#define DATOR_CONFIG 1
-
-// 0 single extruder
-// 1 dual extruder (experimental: untested)
-// 2 dual extruder with one hotend (virtuel dual)
-// Planned: 3 diamont hotend (3 extruders)
-
-#define DATOR_DUAL 0
-
 
 // Define this to set a unique identifier for this printer, (Used by some programs to differentiate between machines)
 // You can use an online service to generate a random UUID. (eg http://www.uuidgenerator.net/version4)
 // #define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
-
-// This defines the number of extruders
-#if DATOR_DUAL == 0
-  #define EXTRUDERS 1
-  #define VIRTUAL_NOZZLES false
-#endif
-#if DATOR_DUAL == 1
-  #define EXTRUDERS 2
-  #define VIRTUAL_NOZZLES false
-#endif
-#if DATOR_DUAL == 2
-  #define EXTRUDERS 2
-  #define VIRTUAL_NOZZLES true
-#endif
 
 //// The following define selects which power supply you have. Please choose the one that matches your setup
 // 1 = ATX
@@ -171,12 +143,40 @@
 // 110 is Pt100 with 1k pullup (non standard)
 
 #define TEMP_SENSOR_0 1
-#define TEMP_SENSOR_1 1
-#define TEMP_SENSOR_2 0
+#define TEMP_SENSOR_2 0 //(not used)
 #define TEMP_SENSOR_BED 5
 
 
 //3Dator
+
+// Here are some predefined configs for different 3Dator Configurations
+// 1 3Dator Kit from 3Dator.com
+// 2 3Dator Mini
+#define DATOR_CONFIG 1
+
+// 0 single extruder
+// 1 dual extruder (experimental: untested)
+// 2 dual extruder with one hotend (virtuel dual)
+// Planned: 3 diamont hotend (3 extruders)
+#define DATOR_DUAL 0
+
+// This defines the number of extruders
+#if DATOR_DUAL == 0
+  #define EXTRUDERS 1
+  #define VIRTUAL_NOZZLES false
+  #define TEMP_SENSOR_1 0
+#endif
+#if DATOR_DUAL == 1
+  #define EXTRUDERS 2
+  #define VIRTUAL_NOZZLES false
+  #define TEMP_SENSOR_1 1
+#endif
+#if DATOR_DUAL == 2
+  #define EXTRUDERS 2
+  #define VIRTUAL_NOZZLES true
+  #define TEMP_SENSOR_1 0
+#endif
+
 //time after which the printer will go in an inactive state (saving power and turn off heaters) in seconds
 #define INACTIVE_TIME 1000
 

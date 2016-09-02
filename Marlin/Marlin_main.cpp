@@ -4512,6 +4512,7 @@ void perform_print_started(){
   starttime = millis();
   stoptime = 0;
   print_finished = false;
+  babysteps = 0;
 }
 
 void perform_print_finished(){

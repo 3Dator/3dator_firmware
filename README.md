@@ -85,3 +85,8 @@ http://wiki.3dator.com
 * completly removed z height from status menu
 * hard fix for wrong color after sending snake
 * fixed bug that when heating up print can be stopped as expected
+
+02.09.2016 (1.1.6)
+* adjust z height now displays distance
+* beta: long press button in z height menu to save height to offset
+* minor improvements

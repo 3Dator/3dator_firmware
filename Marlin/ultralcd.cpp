@@ -35,6 +35,7 @@ bool start_brightness_menu = true;
 bool start_value_red_menu = true;
 bool start_value_green_menu = true;
 bool start_value_blue_menu = true;
+int babystep_safe = 0;
 
 int8_t menu_additional_offset;
 
@@ -373,18 +374,42 @@ static void lcd_babystep_z()
     if (encoderPosition != 0)
     {
         babystepsTodo[Z_AXIS]+=BABYSTEP_Z_MULTIPLICATOR*(int)encoderPosition;
+        babysteps+=BABYSTEP_Z_MULTIPLICATOR*(int)encoderPosition;
         encoderPosition=0;
         lcdDrawUpdate = 1;
+        babystep_safe = 0;
     }
     if (lcdDrawUpdate)
     {
-        lcd_implementation_drawedit(PSTR(MSG_BABYSTEPPING_Z),"");
+        lcd_implementation_drawedit(PSTR(MSG_BABYSTEPPING_Z),ftostr52(babysteps/axis_steps_per_unit[2]));
     }
     if (LCD_CLICKED)
     {
-        lcd_quick_feedback();
-        currentMenu = lcd_tune_menu;
-        encoderPosition = 0;
+        if(babystep_safe == 0){
+          babystep_safe = millis();
+        }
+        //if button gets clicked more then 2 secs
+        if(millis()-babystep_safe > 2000 && millis()-babystep_safe < 3000){
+          //safe babystepping to offset
+          lcd_implementation_drawedit(PSTR("Saved to offset"),"");
+          lcd_quick_feedback();
+          zprobe_zoffset += babysteps/axis_steps_per_unit[2];
+          enquecommand_P(PSTR("M500"));
+          babysteps = 0;
+        }
+        if(millis()-babystep_safe > 3000){
+          lcd_quick_feedback();
+          currentMenu = lcd_tune_menu;
+          encoderPosition = 0;
+          babystep_safe = 0;
+        }
+    }
+    //if button wasn't pressed for over 2 secs
+    if(babystep_safe != 0 and !LCD_CLICKED){
+      lcd_quick_feedback();
+      currentMenu = lcd_tune_menu;
+      encoderPosition = 0;
+      babystep_safe = 0;
     }
 }
 #endif //BABYSTEPPING
@@ -893,7 +918,7 @@ static void lcd_control_motion_menu()
     START_MENU();
     MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
 #ifdef ENABLE_AUTO_BED_LEVELING
-    MENU_ITEM_EDIT(float32, MSG_ZPROBE_ZOFFSET, &zprobe_zoffset, 0.5, 50);
+    MENU_ITEM_EDIT(float32, MSG_ZPROBE_ZOFFSET, &zprobe_zoffset, 0.0, 50);
 #endif
     MENU_ITEM_EDIT(float5, MSG_ACC, &acceleration, 500, 99000);
     MENU_ITEM_EDIT(float3, MSG_VXY_JERK, &max_xy_jerk, 1, 990);
@@ -1540,9 +1565,13 @@ char *itostr31(const int &xx)
   return conv;
 }
 
-char *itostr3(const int &xx)
+char *itostr3(const int &x)
 {
-  if (xx >= 100)
+  int xx = x;
+ 	if (xx < 0) {
+ 	   conv[0]='-';
+ 	   xx = -xx;
+  } else if (xx >= 100)
     conv[0]=(xx/100)%10+'0';
   else
     conv[0]=' ';

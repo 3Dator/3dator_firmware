@@ -275,7 +275,7 @@
 	#define MSG_ERR_LONG_EXTRUDE_STOP " too long extrusion prevented"
 	#define MSG_BABYSTEPPING_X "Babystepping X"
 	#define MSG_BABYSTEPPING_Y "Babystepping Y"
-	#define MSG_BABYSTEPPING_Z "adjust bed height"
+	#define MSG_BABYSTEPPING_Z "adjust height"
 	#define MSG_SERIAL_ERROR_MENU_STRUCTURE "Error in menu structure"
 
 #endif
@@ -895,7 +895,7 @@
 	#define MSG_ERR_LONG_EXTRUDE_STOP " too long extrusion prevented"
 	#define MSG_BABYSTEPPING_X "Babystepping X"
 	#define MSG_BABYSTEPPING_Y "Babystepping Y"
-	#define MSG_BABYSTEPPING_Z "adjust bed height"
+	#define MSG_BABYSTEPPING_Z "adjust height"
 	#define MSG_SERIAL_ERROR_MENU_STRUCTURE "Error in menu structure"
 
 #endif

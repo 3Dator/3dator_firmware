@@ -73,6 +73,7 @@ unsigned char soft_pwm_bed;
 
 #ifdef BABYSTEPPING
   volatile int babystepsTodo[3]={0,0,0};
+  int babysteps = 0;
 #endif
 
 #ifdef FILAMENT_SENSOR

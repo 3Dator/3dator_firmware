@@ -315,6 +315,8 @@ static void lcd_sdcard_stop()
     enquecommand_P(PSTR("G28"));
     //steppers off
     enquecommand_P(PSTR(SD_FINISHED_RELEASECOMMAND));
+
+    if(!print_finished)perform_print_finished();
 }
 
 /* Menu implementation */

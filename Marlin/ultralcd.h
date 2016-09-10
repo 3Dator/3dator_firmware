@@ -16,6 +16,8 @@ extern uint32_t encoderPosition;
   void lcd_setalertstatuspgm(const char* message);
   void lcd_reset_alert_level();
 
+extern void lcd_sdcard_stop();
+
 #ifdef DOGLCD
   extern int lcd_contrast;
   void lcd_setcontrast(uint8_t value);

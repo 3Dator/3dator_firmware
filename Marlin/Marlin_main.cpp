@@ -212,11 +212,12 @@ long inactive_time = millis()/1000;
 byte save_brightness = 255;
 extern void detect_inactivity();
 extern void show_heat_led();
-extern void perform_print_started();
-extern void perform_print_finished();
+void check_for_heatbed();
+
 bool set_inactive = false;
 byte led_display_right = 0;
 byte led_display_left = 0;
+
 bool print_finished = true;
 
 float homing_feedrate[] = HOMING_FEEDRATE;
@@ -644,6 +645,7 @@ void loop()
   checkHitEndstops();
   lcd_update();
   detect_inactivity();
+  check_for_heatbed(); //check if heatbed is presend when printing
   //will need a bit more testing
   //show_heat_led();
   //check if print has finished
@@ -4504,6 +4506,21 @@ void show_heat_led(){
     SendStopOverwriteRange(0,54);
     SendOverwriteRange(0, led_display_left, 255, 0, 0);
     SendOverwriteRange(54-led_display_right, 54, 255, 0, 0);
+  }
+}
+
+void check_for_heatbed(){
+  if(!print_finished){
+    if(degBed() == 0) LCD_MESSAGEPGM(HEATBED_MISSING);
+    while(degBed() == 0 && !lcd_clicked()){
+      manage_heater();
+      manage_inactivity();
+      lcd_update();
+    }
+    if (lcd_clicked())
+    {
+      lcd_sdcard_stop();
+    }
   }
 }
 

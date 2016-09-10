@@ -470,6 +470,14 @@ if(starttime != 0 and card.percentDoneFloat() > 0.3){
 
     //Status message line on the last line
     lcd.setCursor(0, LCD_HEIGHT - 1);
+
+    int len = strlen(lcd_status_message);
+    if (len > 0) {
+      while (len < LCD_WIDTH) {
+        lcd_status_message[len++] = ' ';
+      }
+    }
+    lcd_status_message[LCD_WIDTH] = '\0';
     lcd.print(lcd_status_message);
 }
 static void lcd_implementation_drawmenu_generic(uint8_t row, const char* pstr, char pre_char, char post_char)

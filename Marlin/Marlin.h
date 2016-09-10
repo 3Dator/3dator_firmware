@@ -207,6 +207,10 @@ void setPwmFrequency(uint8_t pin, int val);
 extern byte led_display_right;
 extern byte led_display_left;
 
+extern bool print_finished;
+extern void perform_print_started();
+extern void perform_print_finished();
+
 extern float homing_feedrate[];
 extern bool axis_relative_modes[];
 extern int feedmultiply;

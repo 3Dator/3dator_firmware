@@ -201,6 +201,7 @@
 		#define MSG_PRINT_TIME "printtime"
 		#define MSG_PRINTS_STOPPED "Prints stopped"
 		#define MSG_PRINTS_FINISHED "Prints finished"
+		#define HEATBED_MISSING "Heatbed missing"
 
 // Serial Console Messages
 
@@ -820,6 +821,7 @@
 		#define MSG_PRINT_TIME "Druckzeit"
 		#define MSG_PRINTS_STOPPED "Drucke gestoppt"
 		#define MSG_PRINTS_FINISHED "Fertige Drucke"
+		#define HEATBED_MISSING "Heizbett fehlt"
 
 
 // Serial Console Messages

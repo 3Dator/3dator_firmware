@@ -391,7 +391,7 @@ static void lcd_babystep_z()
           babystep_safe = millis();
         }
         //if button gets clicked more then 2 secs
-        if(millis()-babystep_safe > 2000 && millis()-babystep_safe < 3000){
+        if(millis()-babystep_safe > 2000 && millis()-babystep_safe < 4000){
           //safe babystepping to offset
           lcd_implementation_drawedit(PSTR("Saved to offset"),"");
           lcd_quick_feedback();
@@ -399,7 +399,8 @@ static void lcd_babystep_z()
           enquecommand_P(PSTR("M500"));
           babysteps = 0;
         }
-        if(millis()-babystep_safe > 3000){
+        //leave menu if button keeps getting pressed
+        if(millis()-babystep_safe > 4000){
           lcd_quick_feedback();
           currentMenu = lcd_tune_menu;
           encoderPosition = 0;
@@ -885,7 +886,7 @@ static void lcd_control_temperature_menu()
 #endif
 
     START_MENU();
-    MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
+    MENU_ITEM(back, MSG_CONTROL, lcd_prepare_menu);
     MENU_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
 #if TEMP_SENSOR_1 != 0  && !VIRTUAL_NOZZLES
     MENU_ITEM_EDIT(int3, MSG_NOZZLE1, &target_temperature[1], 0, HEATER_1_MAXTEMP - 15);

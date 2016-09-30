@@ -94,3 +94,6 @@ http://wiki.3dator.com
 10.09.2016 (1.1.7)
 * added failsave if bed is missing after print was started
 * fixed status message wrong behavior
+
+xx.xx.2016 (1.1.8)
+* minor fixes with adjust z height

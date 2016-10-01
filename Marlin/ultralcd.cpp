@@ -370,7 +370,6 @@ static void lcd_autostart_sd()
 #endif
 
 #ifdef BABYSTEPPING
-
 static void lcd_babystep_z()
 {
     if (encoderPosition != 0)
@@ -379,40 +378,17 @@ static void lcd_babystep_z()
         babysteps+=BABYSTEP_Z_MULTIPLICATOR*(int)encoderPosition;
         encoderPosition=0;
         lcdDrawUpdate = 1;
-        babystep_safe = 0;
     }
     if (lcdDrawUpdate)
     {
         lcd_implementation_drawedit(PSTR(MSG_BABYSTEPPING_Z),ftostr52(babysteps/axis_steps_per_unit[2]));
+        lcd_implementation_drawedit(PSTR(MSG_BABYSTEPPING_Z),"");
     }
     if (LCD_CLICKED)
     {
-        if(babystep_safe == 0){
-          babystep_safe = millis();
-        }
-        //if button gets clicked more then 2 secs
-        if(millis()-babystep_safe > 2000 && millis()-babystep_safe < 4000){
-          //safe babystepping to offset
-          lcd_implementation_drawedit(PSTR("Saved to offset"),"");
-          lcd_quick_feedback();
-          zprobe_zoffset += babysteps/axis_steps_per_unit[2];
-          enquecommand_P(PSTR("M500"));
-          babysteps = 0;
-        }
-        //leave menu if button keeps getting pressed
-        if(millis()-babystep_safe > 4000){
-          lcd_quick_feedback();
-          currentMenu = lcd_tune_menu;
-          encoderPosition = 0;
-          babystep_safe = 0;
-        }
-    }
-    //if button wasn't pressed for over 2 secs
-    if(babystep_safe != 0 and !LCD_CLICKED){
-      lcd_quick_feedback();
-      currentMenu = lcd_tune_menu;
-      encoderPosition = 0;
-      babystep_safe = 0;
+        lcd_quick_feedback();
+        currentMenu = lcd_tune_menu;
+        encoderPosition = 0;
     }
 }
 #endif //BABYSTEPPING

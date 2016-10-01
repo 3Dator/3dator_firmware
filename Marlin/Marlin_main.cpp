@@ -4512,14 +4512,10 @@ void show_heat_led(){
 void check_for_heatbed(){
   if(!print_finished){
     if(degBed() == 0) LCD_MESSAGEPGM(HEATBED_MISSING);
-    while(degBed() == 0 && !lcd_clicked()){
+    while(degBed() == 0){
       manage_heater();
       manage_inactivity();
       lcd_update();
-    }
-    if (lcd_clicked())
-    {
-      lcd_sdcard_stop();
     }
   }
 }

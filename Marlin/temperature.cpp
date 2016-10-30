@@ -732,6 +732,10 @@ static void updateTemperaturesFromRawValues()
     {
         current_temperature[e] = analog2temp(current_temperature_raw[e], e);
     }
+    #if VIRTUAL_NOZZLES == true
+        //if second nozzle is virtual, set temp same as first one
+        current_temperature[1] = analog2temp(current_temperature_raw[0], 0);
+    #endif
     current_temperature_bed = analog2tempBed(current_temperature_bed_raw);
     #ifdef TEMP_SENSOR_1_AS_REDUNDANT
       redundant_temperature = analog2temp(redundant_temperature_raw, 1);

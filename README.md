@@ -98,3 +98,8 @@ http://wiki.3dator.com
 05.10.2016 (1.1.8)
 * minor fixes with adjust z height
 * recalibrated e steps (to enable "load failsave" and "store memory")
+
+23.03.2017 (1.1.9)
+* fixed flow 0 appearing even if there is only one nozzle
+* fixed pause print and resume print without refreshing
+* tested filament change, now filament won't get pulled out or pushed in

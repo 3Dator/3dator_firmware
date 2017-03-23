@@ -36,6 +36,7 @@ bool start_value_red_menu = true;
 bool start_value_green_menu = true;
 bool start_value_blue_menu = true;
 int babystep_safe = 0;
+bool is_paused = false;
 
 int8_t menu_additional_offset;
 
@@ -278,10 +279,12 @@ static void lcd_return_to_status()
 
 static void lcd_sdcard_pause()
 {
+    is_paused = true;
     card.pauseSDPrint();
 }
 static void lcd_sdcard_resume()
 {
+    is_paused = false;
     card.startFileprint();
 }
 
@@ -325,7 +328,7 @@ static void lcd_main_menu()
     START_MENU();
     MENU_ITEM(back, MSG_WATCH, lcd_status_screen);
 
-    if (movesplanned() || IS_SD_PRINTING){
+    if (movesplanned() || IS_SD_PRINTING || is_paused){
         MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
     }
 
@@ -414,10 +417,10 @@ static void lcd_tune_menu()
     #endif
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
 
-
     MENU_ITEM_EDIT(int3, MSG_FLOW, &extrudemultiply, 10, 999);
-    MENU_ITEM_EDIT(int3, MSG_FLOW0, &extruder_multiply[0], 10, 999);
+    
 #if TEMP_SENSOR_1 != 0
+    MENU_ITEM_EDIT(int3, MSG_FLOW0, &extruder_multiply[0], 10, 999);
     MENU_ITEM_EDIT(int3, MSG_FLOW1, &extruder_multiply[1], 10, 999);
 #endif
 #if TEMP_SENSOR_2 != 0

@@ -2409,7 +2409,7 @@ Sigma_Exit:
     case 109:
     {
       // M109 - Wait for extruder heater to reach target.
-      SendColors(255,20,0,3,0);
+      SendColors(255,20,0,8,2);
       if(setTargetedHotend(109)){
         break;
       }
@@ -2497,13 +2497,12 @@ Sigma_Exit:
         #endif //TEMP_RESIDENCY_TIME
         }
         LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
-        SendColors(255,255,255,3,0);
         if(print_finished) perform_print_started();
         previous_millis_cmd = millis();
       }
       break;
     case 190: // M190 - Wait for bed heater to reach target.
-    SendColors(255,20,0,3,0);
+    SendColors(255,20,0,8,2);
     #if defined(TEMP_BED_PIN) && TEMP_BED_PIN > -1
         LCD_MESSAGEPGM(MSG_BED_HEATING);
         if (code_seen('S')) {
@@ -2536,7 +2535,6 @@ Sigma_Exit:
           manage_inactivity();
           lcd_update();
         }
-        SendColors(255,255,255,3,0);
         LCD_MESSAGEPGM(MSG_BED_DONE);
         previous_millis_cmd = millis();
     #endif

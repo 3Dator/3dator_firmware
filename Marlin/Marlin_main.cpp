@@ -3581,13 +3581,6 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
           #endif
         }
 
-        //if retract is very long split the motion into steps
-        //uint8_t move_e_x_times = (target[E_AXIS]-current_position[E_AXIS])/100;
-        //int move_e_x_times_total = move_e_x_times;
-        //while(move_e_x_times > 1){
-        //  plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], current_position[E_AXIS]-100*(move_e_x_times_total-move_e_x_times), 60, active_extruder);
-        //  move_e_x_times--;
-        //}
         plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 60, active_extruder);        
         //finish moves
         st_synchronize();
@@ -3609,8 +3602,6 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
           //plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 10, active_extruder);
           //st_synchronize();
         }
-
-        currentMenu = lcd_status_screen;
 
         filament_empty = false;
         plan_set_e_position(current_position[E_AXIS]);

@@ -18,6 +18,10 @@ extern uint32_t encoderPosition;
 
 extern void lcd_sdcard_stop();
 
+typedef void (*menuFunc_t)();
+extern void lcd_status_screen();
+extern menuFunc_t currentMenu;
+
 #ifdef DOGLCD
   extern int lcd_contrast;
   void lcd_setcontrast(uint8_t value);

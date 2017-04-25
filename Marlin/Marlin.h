@@ -21,6 +21,8 @@
 #include "fastio.h"
 #include "Configuration.h"
 #include "pins.h"
+#define byte uint8_t
+#include "ultralcd.h"
 
 #ifndef AT90USB
 #define  HardwareSerial_h // trick to disable the standard HWserial

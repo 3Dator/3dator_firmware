@@ -460,7 +460,14 @@ if(starttime != 0 and card.percentDoneFloat() > 0.3){
         lcd.setCursor(LCD_WIDTH - 6, 2);
         lcd.print(LCD_STR_CLOCK[0]);
 
-        uint16_t time = millis()/60000 - starttime/60000;
+        uint16_t time;
+
+        if(!print_finished){
+          uint16_t time = millis()/60000 - starttime/60000;
+        }else{
+          uint16_t time = statistics_total_print_time;
+        }
+        
 
         lcd.print(itostr2(time/60));
         lcd.print(':');

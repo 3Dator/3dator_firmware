@@ -293,10 +293,7 @@ static void lcd_sdcard_stop()
     card.sdprinting = false;
     card.closefile();
     quickStop();
-    statistics_prints_stopped++;
-    statistics_total_print_time += millis()/60000 - starttime/60000;
-
-    store_statistics();
+    
     //3Dator
     st_synchronize();
     feedmultiply = 100;

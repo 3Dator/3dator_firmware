@@ -734,8 +734,12 @@
     #if MOTHERBOARD == 77
       #define HEATER_BED_PIN     9    // BED
     #else//3dator
-      #define HEATER_BED_PIN     5//8    // BED
-    #endif
+      #if HASBELTBED == 1
+        #define HEATER_BED_PIN     5   // Automated BED Bed
+      #else
+        #define HEATER_BED_PIN     8
+         #endif
+     #endif
   #endif
 
   #define TEMP_BED_PIN       14   // ANALOG NUMBERING

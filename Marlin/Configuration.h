@@ -163,6 +163,11 @@
 // Planned: 3 diamont hotend (3 extruders)
 #define DATOR_DUAL 0
 
+//this enables experimental Belt feature
+// 0 standart Heatbed
+// 1 Printer has external HBridge to drive the Belt Motor and Heatbed (experimental)
+#define HASBELTBED 0
+
 // This defines the number of extruders
 #if DATOR_DUAL == 0
   #define EXTRUDERS 1

@@ -179,6 +179,7 @@
 // M908 - Control digital trimpot directly.
 // M350 - Set microstepping mode.
 // M351 - Toggle MS1 MS2 pins directly.
+// M370 - Clear Heatbed.
 
 // ************ SCARA Specific - This can change to suit future G-code regulations
 // M360 - SCARA calibration: Move to cal-position ThetaA (0 deg calibration)
@@ -213,16 +214,12 @@ byte save_brightness = 255;
 extern void detect_inactivity();
 extern void show_heat_led();
 void check_for_heatbed();
-void check_filament_empty();
-void unload_filament();
-void load_filament();
 
 bool set_inactive = false;
 byte led_display_right = 0;
 byte led_display_left = 0;
 
 bool print_finished = true;
-bool filament_empty = false;
 
 float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
@@ -650,8 +647,6 @@ void loop()
   lcd_update();
   detect_inactivity();
   check_for_heatbed(); //check if heatbed is presend when printing
-
-  check_filament_empty(); //check if filament ran out
   //will need a bit more testing
   //show_heat_led();
   //check if print has finished
@@ -3361,11 +3356,50 @@ Sigma_Exit:
       }
       break;
 	#endif
-    case 400: // M400 finish all moves
+  #ifdef HASBELTBED  
+    case 370: //M370 clear Heatbed with Belt
     {
       st_synchronize();
-    }
+      setTargetBed(0);
+      while(digitalRead(HEATER_BED_PIN) == HIGH){
+        manage_heater();
+        manage_inactivity();
+      } //wait till the bed isn't heated anymore
+      
+      LCD_MESSAGEPGM("emptying bed");
+      codenum = 0;
+      if(code_seen('S')) codenum = code_value() * 1000; // seconds to wait
+
+      st_synchronize();
+      previous_millis_cmd = millis();
+      if (codenum > 0){
+        codenum += millis();  // keep track of when we started waiting
+        analogWrite(4, 255);
+        while(millis()  < codenum && !lcd_clicked()){
+          manage_heater();
+          manage_inactivity();
+          lcd_update();
+        }
+      }
+      else{
+        while(!lcd_clicked()){
+          manage_heater();
+          manage_inactivity();
+          lcd_update();
+          }
+      }
+      LCD_MESSAGEPGM(MSG_RESUMING);
+      analogWrite(4, 0);
     break;
+    }
+ #endif
+    case 400: // M400 finish all moves
+      {
+      st_synchronize();
+      }
+    break;
+   
+    
 #if defined(ENABLE_AUTO_BED_LEVELING) && defined(SERVO_ENDSTOPS) && not defined(Z_PROBE_SLED)
     case 401:
     {
@@ -3523,15 +3557,15 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
         //retract by E
         if(code_seen('E'))
         {
-          target[E_AXIS]-= code_value();
+          target[E_AXIS]+= code_value();
         }
         else
         {
           #ifdef FILAMENTCHANGE_FIRSTRETRACT
-            target[E_AXIS]-= FILAMENTCHANGE_FIRSTRETRACT ;
+            target[E_AXIS]+= FILAMENTCHANGE_FIRSTRETRACT ;
           #endif
         }
-        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 60, active_extruder);
+        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder);
 
         //lift Z
         if(code_seen('Z'))
@@ -3544,7 +3578,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
             target[Z_AXIS]+= FILAMENTCHANGE_ZADD ;
           #endif
         }
-        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 60, active_extruder);
+        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder);
 
         //move xy
         if(code_seen('X'))
@@ -3568,45 +3602,54 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
           #endif
         }
 
-        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 60, active_extruder);
+        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder);
 
         if(code_seen('L'))
         {
-          target[E_AXIS]-= code_value();
+          target[E_AXIS]+= code_value();
         }
         else
         {
           #ifdef FILAMENTCHANGE_FINALRETRACT
-            target[E_AXIS]-= FILAMENTCHANGE_FINALRETRACT;
+            target[E_AXIS]+= FILAMENTCHANGE_FINALRETRACT ;
           #endif
         }
 
-        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 60, active_extruder);        
+        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder);
+
         //finish moves
         st_synchronize();
-
-        target[E_AXIS] = current_position[E_AXIS];
         //disable extruder steppers so filament can be removed
         disable_e0();
         disable_e1();
         disable_e2();
         delay(100);
         LCD_ALERTMESSAGEPGM(MSG_FILAMENTCHANGE);
+        uint8_t cnt=0;
         while(!lcd_clicked()){
+          cnt++;
           manage_heater();
           manage_inactivity();
           lcd_update();
-
-          //target[E_AXIS]+=0.1;
-          //current_position[E_AXIS]=target[E_AXIS];
-          //plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 10, active_extruder);
-          //st_synchronize();
         }
 
-        filament_empty = false;
+        //return to normal
+        if(code_seen('L'))
+        {
+          target[E_AXIS]+= -code_value();
+        }
+        else
+        {
+          #ifdef FILAMENTCHANGE_FINALRETRACT
+            target[E_AXIS]+=(-1)*FILAMENTCHANGE_FINALRETRACT ;
+          #endif
+        }
+        current_position[E_AXIS]=target[E_AXIS]; //the long retract of L is compensated by manual filament feeding
         plan_set_e_position(current_position[E_AXIS]);
-        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], 60, active_extruder); //move xy back
-        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], 60, active_extruder); //move z back
+        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder); //should do nothing
+        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder); //move xy back
+        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder); //move z back
+        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], lastpos[E_AXIS], feedrate/60, active_extruder); //final untretract
     }
     break;
     #endif //FILAMENTCHANGEENABLE
@@ -4531,22 +4574,3 @@ void perform_print_finished(){
   print_finished = true;
 }
 
-void check_filament_empty(){
-  //if filament is empty
-  if(digitalRead(FILAMENT_DETECTOR_PIN) && (movesplanned() || IS_SD_PRINTING) && !filament_empty){
-    tone(BEEPER, 1800);
-    delay(150);
-    noTone(BEEPER);
-
-    tone(BEEPER, 2200);
-    delay(150);
-    noTone(BEEPER);
-
-    tone(BEEPER, 2500);
-    delay(250);
-    noTone(BEEPER);
-
-    enquecommand_P(PSTR("M600"));
-    filament_empty = true;
-  }
-}

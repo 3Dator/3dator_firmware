@@ -24,7 +24,7 @@
 // build by the user have been successfully uploaded into firmware.
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__ // build date and time
 #define STRING_CONFIG_H_AUTHOR "(3Dator GmbH)" // Who made the changes.
-#define STRING_VERSION_NUMBER "1.2"
+#define STRING_VERSION_NUMBER "1.2.1"
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
 // This allows the connection of wireless adapters (for instance) to non-default port pins.
@@ -148,9 +148,6 @@
 
 
 //3Dator
-//uncomment if you want to use the E3D titan extruder
-//#define E3D_TITAN
-
 
 // Here are some predefined configs for different 3Dator Configurations
 // 1 3Dator Kit from 3Dator.com
@@ -162,6 +159,11 @@
 // 2 dual extruder with one hotend (virtuel dual)
 // Planned: 3 diamont hotend (3 extruders)
 #define DATOR_DUAL 0
+
+//this enables experimental Belt feature
+// 0 standart Heatbed
+// 1 Printer has external HBridge to drive the Belt Motor and Heatbed (experimental)
+#define HASBELTBED 0
 
 // This defines the number of extruders
 #if DATOR_DUAL == 0
@@ -187,8 +189,6 @@
 #define REAR_FAN_POWER 120
 extern bool fan_on[EXTRUDERS];
 
-#define FILAMENT_DETECTOR_PIN 2
-
 // This makes temp sensor 1 a redundant sensor for sensor 0. If the temperatures difference between these sensors is to high the print will be aborted.
 //#define TEMP_SENSOR_1_AS_REDUNDANT
 #define MAX_REDUNDANT_TEMP_SENSOR_DIFF 10
@@ -209,11 +209,7 @@ extern bool fan_on[EXTRUDERS];
 // When temperature exceeds max temp, your heater will be switched off.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
 // You should use MINTEMP for thermistor short/failure protection.
-#if TEMP_SENSOR_0 == 66
-  #define HEATER_0_MAXTEMP 500
-#else
-  #define HEATER_0_MAXTEMP 275
-#endif
+#define HEATER_0_MAXTEMP 275
 #define HEATER_1_MAXTEMP 275
 #define HEATER_2_MAXTEMP 275
 #define BED_MAXTEMP 110
@@ -302,8 +298,8 @@ extern bool fan_on[EXTRUDERS];
 //if PREVENT_DANGEROUS_EXTRUDE is on, you can still disable (uncomment) very long bits of extrusion separately.
 #define PREVENT_LENGTHY_EXTRUDE
 
-#define EXTRUDE_MINTEMP 180
-#define EXTRUDE_MAXLENGTH 1000 //prevent extrusion of very large distances.
+#define EXTRUDE_MINTEMP 170
+#define EXTRUDE_MAXLENGTH (X_MAX_LENGTH+Y_MAX_LENGTH) //prevent extrusion of very large distances.
 
 /*================== Thermal Runaway Protection ==============================
 This is a feature to protect your printer from burn up in flames if it has
@@ -562,19 +558,15 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
 
 //// MOVEMENT SETTINGS
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
-#define HOMING_FEEDRATE {100*60, 100*60, 30*60, 0}  // set the homing speeds (mm/min)
+#define HOMING_FEEDRATE {100*60, 100*60, 40*60, 0}  // set the homing speeds (mm/min)
 
 // default settings
 //calcutate
 //new steps = (expectedMeasurement/actualMeasurement)*old steps
+//old #define DEFAULT_AXIS_STEPS_PER_UNIT   {109.8,109.8,800,97.12592718*2}  // default steps per unit
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {110.6,110.6,800,200}  // default steps per unit
 
-#ifdef E3D_TITAN
-  #define DEFAULT_AXIS_STEPS_PER_UNIT   {110.6,110.6,800,837}
-#else
-  #define DEFAULT_AXIS_STEPS_PER_UNIT   {110.6,110.6,800,200}
-#endif
-
-#define DEFAULT_MAX_FEEDRATE          {350, 350, 30, 300}    // (mm/sec)
+#define DEFAULT_MAX_FEEDRATE          {350, 350, 30, 170}    // (mm/sec)
 #define DEFAULT_MAX_ACCELERATION      {5000,5000,100,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
 
 #define DEFAULT_ACCELERATION          2000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves

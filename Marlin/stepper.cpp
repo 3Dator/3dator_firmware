@@ -886,6 +886,11 @@ void st_init()
     #endif
   #endif
 
+  #if defined(FILAMENT_DETECTOR_PIN) && FILAMENT_DETECTOR_PIN > -1
+    SET_INPUT(FILAMENT_DETECTOR_PIN);
+    WRITE(FILAMENT_DETECTOR_PIN,LOW);
+  #endif
+
 
   //Initialize Step Pins
   #if defined(X_STEP_PIN) && (X_STEP_PIN > -1)

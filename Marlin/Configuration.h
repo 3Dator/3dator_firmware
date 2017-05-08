@@ -209,7 +209,11 @@ extern bool fan_on[EXTRUDERS];
 // When temperature exceeds max temp, your heater will be switched off.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
 // You should use MINTEMP for thermistor short/failure protection.
-#define HEATER_0_MAXTEMP 275
+#if TEMP_SENSOR_0 == 66
+  #define HEATER_0_MAXTEMP 500
+#else
+  #define HEATER_0_MAXTEMP 275
+#endif
 #define HEATER_1_MAXTEMP 275
 #define HEATER_2_MAXTEMP 275
 #define BED_MAXTEMP 110

@@ -103,3 +103,9 @@ http://wiki.3dator.com
 * fixed flow 0 appearing even if there is only one nozzle
 * fixed pause print and resume print without refreshing
 * tested filament change, now filament won't get pulled out or pushed in
+
+25.04.2017 (1.2)
+* added support for a filament sensor, printer will pause when filament runs out
+* changed heating up animation
+* added easy configuration for E3D Titan extruder upgrade
+* fixed printtime won't stop after print is finished

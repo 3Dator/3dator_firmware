@@ -179,6 +179,7 @@
 // M908 - Control digital trimpot directly.
 // M350 - Set microstepping mode.
 // M351 - Toggle MS1 MS2 pins directly.
+// M370 - Clear Heatbed.
 
 // ************ SCARA Specific - This can change to suit future G-code regulations
 // M360 - SCARA calibration: Move to cal-position ThetaA (0 deg calibration)
@@ -3355,11 +3356,50 @@ Sigma_Exit:
       }
       break;
 	#endif
-    case 400: // M400 finish all moves
+  #ifdef HASBELTBED  
+    case 370: //M370 clear Heatbed with Belt
     {
       st_synchronize();
-    }
+      setTargetBed(0);
+      while(digitalRead(HEATER_BED_PIN) == HIGH){
+        manage_heater();
+        manage_inactivity();
+      } //wait till the bed isn't heated anymore
+      
+      LCD_MESSAGEPGM("emptying bed");
+      codenum = 0;
+      if(code_seen('S')) codenum = code_value() * 1000; // seconds to wait
+
+      st_synchronize();
+      previous_millis_cmd = millis();
+      if (codenum > 0){
+        codenum += millis();  // keep track of when we started waiting
+        analogWrite(4, 255);
+        while(millis()  < codenum && !lcd_clicked()){
+          manage_heater();
+          manage_inactivity();
+          lcd_update();
+        }
+      }
+      else{
+        while(!lcd_clicked()){
+          manage_heater();
+          manage_inactivity();
+          lcd_update();
+          }
+      }
+      LCD_MESSAGEPGM(MSG_RESUMING);
+      analogWrite(4, 0);
     break;
+    }
+ #endif
+    case 400: // M400 finish all moves
+      {
+      st_synchronize();
+      }
+    break;
+   
+    
 #if defined(ENABLE_AUTO_BED_LEVELING) && defined(SERVO_ENDSTOPS) && not defined(Z_PROBE_SLED)
     case 401:
     {

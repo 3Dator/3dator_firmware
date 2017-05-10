@@ -146,11 +146,11 @@
 #define TEMP_SENSOR_2 0 //(not used)
 #define TEMP_SENSOR_BED 5
 
+//--------------------------------------------------------------------------------------
+//3Dator configuration begin -----------------------------------------------------------
 
-//3Dator
 //uncomment if you want to use the E3D titan extruder
 //#define E3D_TITAN
-
 
 // Here are some predefined configs for different 3Dator Configurations
 // 1 3Dator Kit from 3Dator.com
@@ -159,14 +159,19 @@
 
 // 0 single extruder
 // 1 dual extruder (experimental: untested)
-// 2 dual extruder with one hotend (virtuel dual)
-// Planned: 3 diamont hotend (3 extruders)
+// 2 dual extruder with one hotend (virtual dual)
 #define DATOR_DUAL 0
+
+//Uncomment the next line to enable Filament detection
+//#define FILAMENT_DETECTOR_PIN 2
 
 //this enables experimental Belt feature
 // 0 standart Heatbed
 // 1 Printer has external HBridge to drive the Belt Motor and Heatbed (experimental)
 #define HASBELTBED 0
+
+//3Dator configuration end -------------------------------------------------------------
+//--------------------------------------------------------------------------------------
 
 // This defines the number of extruders
 #if DATOR_DUAL == 0
@@ -191,8 +196,6 @@
 #define FAN_ON_TEMP 50
 #define REAR_FAN_POWER 120
 extern bool fan_on[EXTRUDERS];
-
-#define FILAMENT_DETECTOR_PIN 2
 
 // This makes temp sensor 1 a redundant sensor for sensor 0. If the temperatures difference between these sensors is to high the print will be aborted.
 //#define TEMP_SENSOR_1_AS_REDUNDANT

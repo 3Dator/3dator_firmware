@@ -214,7 +214,9 @@ byte save_brightness = 255;
 extern void detect_inactivity();
 extern void show_heat_led();
 void check_for_heatbed();
+#ifdef FILAMENT_DETECTOR_PIN
 void check_filament_empty();
+#endif
 void unload_filament();
 void load_filament();
 
@@ -651,8 +653,9 @@ void loop()
   lcd_update();
   detect_inactivity();
   check_for_heatbed(); //check if heatbed is presend when printing
-
+  #ifdef FILAMENT_DETECTOR_PIN
   check_filament_empty(); //check if filament ran out
+  #endif
   //will need a bit more testing
   //show_heat_led();
   //check if print has finished
@@ -4569,6 +4572,7 @@ void perform_print_finished(){
   print_finished = true;
 }
 
+#ifdef FILAMENT_DETECTOR_PIN
 void check_filament_empty(){
   //if filament is empty
   if(digitalRead(FILAMENT_DETECTOR_PIN) && (movesplanned() || IS_SD_PRINTING) && !filament_empty){
@@ -4588,3 +4592,4 @@ void check_filament_empty(){
     filament_empty = true;
   }
 }
+#endif  //FILAMENT_DETECTOR_PIN

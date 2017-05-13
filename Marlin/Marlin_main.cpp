@@ -4575,7 +4575,8 @@ void perform_print_finished(){
 #ifdef FILAMENT_DETECTOR_PIN
 void check_filament_empty(){
   //if filament is empty
-  if(digitalRead(FILAMENT_DETECTOR_PIN) && (movesplanned() || IS_SD_PRINTING) && !filament_empty){
+  if(digitalRead(FILAMENT_DETECTOR_PIN) && print_finished = false && !filament_empty){
+    st_synchronize();
     tone(BEEPER, 1800);
     delay(150);
     noTone(BEEPER);

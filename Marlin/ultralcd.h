@@ -5,12 +5,22 @@
 
 #ifdef ULTRA_LCD
 
+//3dator
+extern byte led_brightness;
+extern uint32_t encoderPosition;
+
   void lcd_update();
   void lcd_init();
   void lcd_setstatus(const char* message);
   void lcd_setstatuspgm(const char* message);
   void lcd_setalertstatuspgm(const char* message);
   void lcd_reset_alert_level();
+
+extern void lcd_sdcard_stop();
+
+typedef void (*menuFunc_t)();
+extern void lcd_status_screen();
+extern menuFunc_t currentMenu;
 
 #ifdef DOGLCD
   extern int lcd_contrast;
@@ -23,7 +33,7 @@
   #define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatuspgm(PSTR(x))
 
   #define LCD_UPDATE_INTERVAL 100
-  #define LCD_TIMEOUT_TO_STATUS 60000
+  #define LCD_TIMEOUT_TO_STATUS 180000
 
   #ifdef ULTIPANEL
   void lcd_buttons_update();
@@ -42,9 +52,9 @@
   extern int absPreheatHotendTemp;
   extern int absPreheatHPBTemp;
   extern int absPreheatFanSpeed;
-  
+
   extern bool cancel_heatup;
-    
+
   void lcd_buzz(long duration,uint16_t freq);
   bool lcd_clicked();
 
@@ -83,7 +93,7 @@
     #define B_ST (1<<BL_ST)
     #define EN_B (1<<BLEN_B)
     #define EN_A (1<<BLEN_A)
-    
+
     #define LCD_CLICKED ((buttons&B_MI)||(buttons&B_ST))
   #endif//NEWPANEL
 
@@ -95,9 +105,9 @@
   FORCE_INLINE void lcd_reset_alert_level() {}
   FORCE_INLINE void lcd_buzz(long duration,uint16_t freq) {}
 
-  #define LCD_MESSAGEPGM(x) 
-  #define LCD_ALERTMESSAGEPGM(x) 
-#endif 
+  #define LCD_MESSAGEPGM(x)
+  #define LCD_ALERTMESSAGEPGM(x)
+#endif
 
 char *itostr2(const uint8_t &x);
 char *itostr31(const int &xx);

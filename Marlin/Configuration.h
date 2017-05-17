@@ -5,11 +5,26 @@
 // Advanced settings can be found in Configuration_adv.h
 // BASIC SETTINGS: select your board type, temperature sensor type, axis scaling, and endstop configuration
 
+//===========================================================================
+//============================= DELTA Printer ===============================
+//===========================================================================
+// For a Delta printer replace the configuration files with the files in the
+// example_configurations/delta directory.
+//
+
+//===========================================================================
+//============================= SCARA Printer ===============================
+//===========================================================================
+// For a Delta printer replace the configuration files with the files in the
+// example_configurations/SCARA directory.
+//
+
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__ // build date and time
 #define STRING_CONFIG_H_AUTHOR "(3Dator GmbH)" // Who made the changes.
+#define STRING_VERSION_NUMBER "1.2"
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
 // This allows the connection of wireless adapters (for instance) to non-default port pins.
@@ -74,16 +89,10 @@
 // Define this to set a custom name for your generic Mendel,
 #define CUSTOM_MENDEL_NAME "3Dator"
 
+
 // Define this to set a unique identifier for this printer, (Used by some programs to differentiate between machines)
 // You can use an online service to generate a random UUID. (eg http://www.uuidgenerator.net/version4)
 // #define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
-
-// This defines the number of extruders
-#define EXTRUDERS 1
-#define NOZZLES //Not Working yet
-
-#define STARTCHECK 1 //checking the Printer for faulty connections after the first Start.
-
 
 //// The following define selects which power supply you have. Please choose the one that matches your setup
 // 1 = ATX
@@ -120,6 +129,7 @@
 // 13 is 100k Hisens 3950  1% up to 300°C for hotend "Simple ONE " & "Hotend "All In ONE"
 // 20 is the PT100 circuit found in the Ultimainboard V2.x
 // 60 is 100k Maker's Tool Works Kapton Bed Thermistor beta=3950
+// 66 High-temperature NTC thermistor for DYZE DESIGN HotEnd
 //
 //    1k ohm pullup tables - This is not normal, you would have to have changed out your 4.7k for 1k
 //                          (but gives greater accuracy and more stable PID)
@@ -133,13 +143,58 @@
 // 110 is Pt100 with 1k pullup (non standard)
 
 #define TEMP_SENSOR_0 1
-#define TEMP_SENSOR_1 0
-#define TEMP_SENSOR_2 0
+#define TEMP_SENSOR_2 0 //(not used)
 #define TEMP_SENSOR_BED 5
 
+//--------------------------------------------------------------------------------------
+//3Dator configuration begin -----------------------------------------------------------
 
-//3Dator
+//uncomment if you want to use the E3D titan extruder
+//#define E3D_TITAN
+
+// Here are some predefined configs for different 3Dator Configurations
+// 1 3Dator Kit from 3Dator.com
+// 2 3Dator Mini
+#define DATOR_CONFIG 1
+
+// 0 single extruder
+// 1 dual extruder (experimental: untested)
+// 2 dual extruder with one hotend (virtual dual)
+#define DATOR_DUAL 0
+
+//Uncomment the next line to enable Filament detection
+//#define FILAMENT_DETECTOR_PIN 2
+
+//this enables experimental Belt feature
+// 0 standart Heatbed
+// 1 Printer has external HBridge to drive the Belt Motor and Heatbed (experimental)
+#define HASBELTBED 0
+
+//3Dator configuration end -------------------------------------------------------------
+//--------------------------------------------------------------------------------------
+
+// This defines the number of extruders
+#if DATOR_DUAL == 0
+  #define EXTRUDERS 1
+  #define VIRTUAL_NOZZLES false
+  #define TEMP_SENSOR_1 0
+#endif
+#if DATOR_DUAL == 1
+  #define EXTRUDERS 2
+  #define VIRTUAL_NOZZLES false
+  #define TEMP_SENSOR_1 1
+#endif
+#if DATOR_DUAL == 2
+  #define EXTRUDERS 2
+  #define VIRTUAL_NOZZLES true
+  #define TEMP_SENSOR_1 0
+#endif
+
+//time after which the printer will go in an inactive state (saving power and turn off heaters) in seconds
+#define INACTIVE_TIME 1000
+
 #define FAN_ON_TEMP 50
+#define REAR_FAN_POWER 120
 extern bool fan_on[EXTRUDERS];
 
 // This makes temp sensor 1 a redundant sensor for sensor 0. If the temperatures difference between these sensors is to high the print will be aborted.
@@ -162,7 +217,11 @@ extern bool fan_on[EXTRUDERS];
 // When temperature exceeds max temp, your heater will be switched off.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
 // You should use MINTEMP for thermistor short/failure protection.
-#define HEATER_0_MAXTEMP 275
+#if TEMP_SENSOR_0 == 66
+  #define HEATER_0_MAXTEMP 500
+#else
+  #define HEATER_0_MAXTEMP 275
+#endif
 #define HEATER_1_MAXTEMP 275
 #define HEATER_2_MAXTEMP 275
 #define BED_MAXTEMP 110
@@ -251,8 +310,8 @@ extern bool fan_on[EXTRUDERS];
 //if PREVENT_DANGEROUS_EXTRUDE is on, you can still disable (uncomment) very long bits of extrusion separately.
 #define PREVENT_LENGTHY_EXTRUDE
 
-#define EXTRUDE_MINTEMP 170
-#define EXTRUDE_MAXLENGTH (X_MAX_LENGTH+Y_MAX_LENGTH) //prevent extrusion of very large distances.
+#define EXTRUDE_MINTEMP 180
+#define EXTRUDE_MAXLENGTH 1000 //prevent extrusion of very large distances.
 
 /*================== Thermal Runaway Protection ==============================
 This is a feature to protect your printer from burn up in flames if it has
@@ -280,15 +339,15 @@ your extruder heater takes 2 minutes to hit the target on heating.
 // uncomment the 2 defines below:
 
 // Parameters for all extruder heaters
-//#define THERMAL_RUNAWAY_PROTECTION_PERIOD 40 //in seconds
-//#define THERMAL_RUNAWAY_PROTECTION_HYSTERESIS 4 // in degree Celsius
+#define THERMAL_RUNAWAY_PROTECTION_PERIOD 60 //in seconds
+#define THERMAL_RUNAWAY_PROTECTION_HYSTERESIS 30 // in degree Celsius
 
 // If you want to enable this feature for your bed heater,
 // uncomment the 2 defines below:
 
 // Parameters for the bed heater
-//#define THERMAL_RUNAWAY_PROTECTION_BED_PERIOD 20 //in seconds
-//#define THERMAL_RUNAWAY_PROTECTION_BED_HYSTERESIS 2 // in degree Celsius
+#define THERMAL_RUNAWAY_PROTECTION_BED_PERIOD 120 //in seconds
+#define THERMAL_RUNAWAY_PROTECTION_BED_HYSTERESIS 5 // in degree Celsius
 //===========================================================================
 
 
@@ -322,8 +381,17 @@ your extruder heater takes 2 minutes to hit the target on heating.
 #endif
 
 // The pullups are needed if you directly connect a mechanical endswitch between the signal and ground pins.
-const bool X_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
-const bool Y_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
+
+#if DATOR_CONFIG == 1
+  const bool X_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
+  const bool Y_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
+#endif
+
+#if DATOR_CONFIG == 2
+  const bool X_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+  const bool Y_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+#endif
+
 const bool Z_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 const bool X_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 const bool Y_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
@@ -353,8 +421,9 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
 #define INVERT_Y_DIR true    // for Mendel set to true, for Orca set to false
 #define INVERT_Z_DIR false     // for Mendel set to false, for Orca set to true
 #define INVERT_E0_DIR true   // for direct drive extruder v9 set to true, for geared extruder set to false
+//3dator: if you are using the mirrored extruder set this to false
 #define INVERT_E1_DIR false    // for direct drive extruder v9 set to true, for geared extruder set to false
-#define INVERT_E2_DIR false   // for direct drive extruder v9 set to true, for geared extruder set to false
+#define INVERT_E2_DIR true   // for direct drive extruder v9 set to true, for geared extruder set to false
 
 // ENDSTOP SETTINGS:
 // Sets direction of endstops when homing; 1=MAX, -1=MIN
@@ -366,12 +435,24 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
 #define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
 
 // Travel limits after homing
-#define X_MAX_POS 170
-#define X_MIN_POS 0
-#define Y_MAX_POS 180
-#define Y_MIN_POS 0
-#define Z_MAX_POS 269
-#define Z_MIN_POS 0
+
+#if DATOR_CONFIG == 1
+  #define X_MAX_POS 170
+  #define X_MIN_POS 0
+  #define Y_MAX_POS 180
+  #define Y_MIN_POS 0
+  #define Z_MAX_POS 260
+  #define Z_MIN_POS 0
+#endif
+
+#if DATOR_CONFIG == 2
+  #define X_MAX_POS 90
+  #define X_MIN_POS 0
+  #define Y_MAX_POS 90
+  #define Y_MIN_POS 0
+  #define Z_MAX_POS 90
+  #define Z_MIN_POS 0
+#endif
 
 #define X_MAX_LENGTH (X_MAX_POS - X_MIN_POS)
 #define Y_MAX_LENGTH (Y_MAX_POS - Y_MIN_POS)
@@ -420,8 +501,13 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
       #define ABL_PROBE_PT_1_X 10
       #define ABL_PROBE_PT_1_Y 0
       #define ABL_PROBE_PT_2_X X_MAX_LENGTH/2
-      #define ABL_PROBE_PT_2_Y Y_MAX_LENGTH-50
-      #define ABL_PROBE_PT_3_X X_MAX_LENGTH-20
+      #if DATOR_CONFIG == 1
+        #define ABL_PROBE_PT_2_Y Y_MAX_LENGTH-50
+        #define ABL_PROBE_PT_3_X X_MAX_LENGTH-20
+      #else
+        #define ABL_PROBE_PT_2_Y Y_MAX_LENGTH-5
+        #define ABL_PROBE_PT_3_X X_MAX_LENGTH-2
+      #endif
       #define ABL_PROBE_PT_3_Y 0
 
 
@@ -484,18 +570,22 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
 
 //// MOVEMENT SETTINGS
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
-#define HOMING_FEEDRATE {100*60, 100*60, 40*60, 0}  // set the homing speeds (mm/min)
+#define HOMING_FEEDRATE {100*60, 100*60, 30*60, 0}  // set the homing speeds (mm/min)
 
 // default settings
 //calcutate
 //new steps = (expectedMeasurement/actualMeasurement)*old steps
-//old #define DEFAULT_AXIS_STEPS_PER_UNIT   {109.8,109.8,800,97.12592718*2}  // default steps per unit
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {110.6,110.6,800,97.12592718*2}  // default steps per unit
 
-#define DEFAULT_MAX_FEEDRATE          {500, 500, 30, 100}    // (mm/sec)
+#ifdef E3D_TITAN
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   {110.6,110.6,800,837}
+#else
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   {110.6,110.6,800,200}
+#endif
+
+#define DEFAULT_MAX_FEEDRATE          {350, 350, 30, 300}    // (mm/sec)
 #define DEFAULT_MAX_ACCELERATION      {5000,5000,100,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
 
-#define DEFAULT_ACCELERATION          3000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
+#define DEFAULT_ACCELERATION          2000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
 #define DEFAULT_RETRACT_ACCELERATION  9000   // X, Y, Z and E max acceleration in mm/s^2 for retracts
 
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
@@ -505,7 +595,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
 // #define EXTRUDER_OFFSET_Y {0.0, 5.00}  // (in mm) for each extruder, offset of the hotend on the Y axis
 
 // The speed change that does not require acceleration (i.e. the software might assume it can be done instantaneously)
-#define DEFAULT_XYJERK                20.0    // (mm/sec)
+#define DEFAULT_XYJERK                10.0    // (mm/sec)
 #define DEFAULT_ZJERK                 0.4     // (mm/sec)
 #define DEFAULT_EJERK                 5.0    // (mm/sec)
 
@@ -535,8 +625,8 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
 
 // Preheat Constants
 #define PLA_PREHEAT_HOTEND_TEMP 180
-#define PLA_PREHEAT_HPB_TEMP 70
-#define PLA_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
+#define PLA_PREHEAT_HPB_TEMP 40
+#define PLA_PREHEAT_FAN_SPEED 0   // Insert Value between 0 and 255
 
 #define ABS_PREHEAT_HOTEND_TEMP 240
 #define ABS_PREHEAT_HPB_TEMP 100

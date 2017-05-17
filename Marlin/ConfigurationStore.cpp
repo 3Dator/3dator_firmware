@@ -4,6 +4,16 @@
 #include "ultralcd.h"
 #include "ConfigurationStore.h"
 
+long statistics_total_print_time = 0;
+int statistics_prints_finished = 0;
+int statistics_prints_stopped = 0;
+
+extern bool first_startup = 0;
+extern bool fast_mode_active = 0;
+extern long sd_card_position = 0;
+extern float save_autoleveling[3] = {0,0,0};
+extern float save_position[3] = {0,0,0};
+
 void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size)
 {
     do
@@ -38,15 +48,7 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 // wrong data being written to the variables.
 // ALSO:  always make sure the variables in the Store and retrieve sections are in the same order.
 
-#define EEPROM_VERSION "V10"
-#ifdef DELTA
-	#undef EEPROM_VERSION
-	#define EEPROM_VERSION "V11"
-#endif
-#ifdef SCARA
-	#undef EEPROM_VERSION
-	#define EEPROM_VERSION "V12"
-#endif
+#define EEPROM_VERSION "V11"
 
 #ifdef EEPROM_SETTINGS
 void Config_StoreSettings()
@@ -66,17 +68,27 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i,max_z_jerk);
   EEPROM_WRITE_VAR(i,max_e_jerk);
   EEPROM_WRITE_VAR(i,add_homing);
-  //3Dator
-  EEPROM_WRITE_VAR(i,STARTCHECK);
+  //statistics
+  EEPROM_WRITE_VAR(i,statistics_total_print_time);
+  EEPROM_WRITE_VAR(i,statistics_prints_finished);
+  EEPROM_WRITE_VAR(i,statistics_prints_stopped);
+
+  EEPROM_WRITE_VAR(i,led_brightness);
+  EEPROM_WRITE_VAR(i,first_startup);
+  EEPROM_WRITE_VAR(i,fast_mode_active);
+  EEPROM_WRITE_VAR(i,sd_card_position);
+  EEPROM_WRITE_VAR(i,save_autoleveling);
+  EEPROM_WRITE_VAR(i,save_position);
+
   #ifdef DELTA
-  EEPROM_WRITE_VAR(i,endstop_adj);
-  EEPROM_WRITE_VAR(i,delta_radius);
-  EEPROM_WRITE_VAR(i,delta_diagonal_rod);
-  EEPROM_WRITE_VAR(i,delta_segments_per_second);
+    EEPROM_WRITE_VAR(i,endstop_adj);
+    EEPROM_WRITE_VAR(i,delta_radius);
+    EEPROM_WRITE_VAR(i,delta_diagonal_rod);
+    EEPROM_WRITE_VAR(i,delta_segments_per_second);
   #endif
   #ifndef ULTIPANEL
-  int plaPreheatHotendTemp = PLA_PREHEAT_HOTEND_TEMP, plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP, plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
-  int absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP, absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP, absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
+    int plaPreheatHotendTemp = PLA_PREHEAT_HOTEND_TEMP, plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP, plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
+    int absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP, absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP, absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
   #endif
   EEPROM_WRITE_VAR(i,plaPreheatHotendTemp);
   EEPROM_WRITE_VAR(i,plaPreheatHPBTemp);
@@ -101,7 +113,7 @@ void Config_StoreSettings()
   #endif
   EEPROM_WRITE_VAR(i,lcd_contrast);
   #ifdef SCARA
-  EEPROM_WRITE_VAR(i,axis_scaling);        // Add scaling for SCARA
+    EEPROM_WRITE_VAR(i,axis_scaling);        // Add scaling for SCARA
   #endif
   char ver2[4]=EEPROM_VERSION;
   i=EEPROM_OFFSET;
@@ -221,7 +233,7 @@ void Config_RetrieveSettings()
         EEPROM_READ_VAR(i,max_acceleration_units_per_sq_second);
 
         // steps per sq second need to be updated to agree with the units per sq second (as they are what is used in the planner)
-		reset_acceleration_rates();
+		    reset_acceleration_rates();
 
         EEPROM_READ_VAR(i,acceleration);
         EEPROM_READ_VAR(i,retract_acceleration);
@@ -232,17 +244,27 @@ void Config_RetrieveSettings()
         EEPROM_READ_VAR(i,max_z_jerk);
         EEPROM_READ_VAR(i,max_e_jerk);
         EEPROM_READ_VAR(i,add_homing);
-        //3Dator
-        EEPROM_READ_VAR(i,STARTCHECK);
+        //statistics
+        EEPROM_READ_VAR(i,statistics_total_print_time);
+        EEPROM_READ_VAR(i,statistics_prints_finished);
+        EEPROM_READ_VAR(i,statistics_prints_stopped);
+
+        EEPROM_READ_VAR(i,led_brightness);
+        EEPROM_READ_VAR(i,first_startup);
+        EEPROM_READ_VAR(i,fast_mode_active);
+        EEPROM_READ_VAR(i,sd_card_position);
+        EEPROM_READ_VAR(i,save_autoleveling);
+        EEPROM_READ_VAR(i,save_position);
+
         #ifdef DELTA
-		EEPROM_READ_VAR(i,endstop_adj);
-		EEPROM_READ_VAR(i,delta_radius);
-		EEPROM_READ_VAR(i,delta_diagonal_rod);
-		EEPROM_READ_VAR(i,delta_segments_per_second);
+      		EEPROM_READ_VAR(i,endstop_adj);
+      		EEPROM_READ_VAR(i,delta_radius);
+      		EEPROM_READ_VAR(i,delta_diagonal_rod);
+      		EEPROM_READ_VAR(i,delta_segments_per_second);
         #endif
         #ifndef ULTIPANEL
-        int plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed;
-        int absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed;
+          int plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed;
+          int absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed;
         #endif
         EEPROM_READ_VAR(i,plaPreheatHotendTemp);
         EEPROM_READ_VAR(i,plaPreheatHPBTemp);
@@ -252,22 +274,22 @@ void Config_RetrieveSettings()
         EEPROM_READ_VAR(i,absPreheatFanSpeed);
         EEPROM_READ_VAR(i,zprobe_zoffset);
         #ifndef PIDTEMP
-        float Kp,Ki,Kd;
+          float Kp,Ki,Kd;
         #endif
         // do not need to scale PID values as the values in EEPROM are already scaled
         EEPROM_READ_VAR(i,Kp);
         EEPROM_READ_VAR(i,Ki);
         EEPROM_READ_VAR(i,Kd);
         #ifndef DOGLCD
-        int lcd_contrast;
+          int lcd_contrast;
         #endif
         EEPROM_READ_VAR(i,lcd_contrast);
-		#ifdef SCARA
-		EEPROM_READ_VAR(i,axis_scaling);
-		#endif
+    		#ifdef SCARA
+    		  EEPROM_READ_VAR(i,axis_scaling);
+    		#endif
 
-		// Call updatePID (similar to when we have processed M301)
-		updatePID();
+		    // Call updatePID (similar to when we have processed M301)
+		    updatePID();
         SERIAL_ECHO_START;
         SERIAL_ECHOLNPGM("Stored settings retrieved");
     }
@@ -308,41 +330,57 @@ void Config_ResetDefault()
     max_z_jerk=DEFAULT_ZJERK;
     max_e_jerk=DEFAULT_EJERK;
     add_homing[0] = add_homing[1] = add_homing[2] = 0;
-#ifdef DELTA
-	endstop_adj[0] = endstop_adj[1] = endstop_adj[2] = 0;
-	delta_radius= DELTA_RADIUS;
-	delta_diagonal_rod= DELTA_DIAGONAL_ROD;
-	delta_segments_per_second= DELTA_SEGMENTS_PER_SECOND;
-	recalc_delta_settings(delta_radius, delta_diagonal_rod);
-#endif
-#ifdef ULTIPANEL
-    plaPreheatHotendTemp = PLA_PREHEAT_HOTEND_TEMP;
-    plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP;
-    plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
-    absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP;
-    absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP;
-    absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
-#endif
-#ifdef ENABLE_AUTO_BED_LEVELING
-    zprobe_zoffset = -Z_PROBE_OFFSET_FROM_EXTRUDER;
-#endif
-#ifdef DOGLCD
-    lcd_contrast = DEFAULT_LCD_CONTRAST;
-#endif
-#ifdef PIDTEMP
-    Kp = DEFAULT_Kp;
-    Ki = scalePID_i(DEFAULT_Ki);
-    Kd = scalePID_d(DEFAULT_Kd);
 
-    // call updatePID (similar to when we have processed M301)
-    updatePID();
+    led_brightness = 255;
+    fast_mode_active = 0;
+    sd_card_position = 0;
+    memset(save_autoleveling, 0, 3*sizeof(*save_autoleveling));
+    memset(save_position, 0, 3*sizeof(*save_position));
+    #ifdef DELTA
+    	endstop_adj[0] = endstop_adj[1] = endstop_adj[2] = 0;
+    	delta_radius= DELTA_RADIUS;
+    	delta_diagonal_rod= DELTA_DIAGONAL_ROD;
+    	delta_segments_per_second= DELTA_SEGMENTS_PER_SECOND;
+    	recalc_delta_settings(delta_radius, delta_diagonal_rod);
+    #endif
+    #ifdef ULTIPANEL
+        plaPreheatHotendTemp = PLA_PREHEAT_HOTEND_TEMP;
+        plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP;
+        plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
+        absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP;
+        absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP;
+        absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
+    #endif
+    #ifdef ENABLE_AUTO_BED_LEVELING
+        zprobe_zoffset = -Z_PROBE_OFFSET_FROM_EXTRUDER;
+    #endif
+    #ifdef DOGLCD
+        lcd_contrast = DEFAULT_LCD_CONTRAST;
+    #endif
+    #ifdef PIDTEMP
+        Kp = DEFAULT_Kp;
+        Ki = scalePID_i(DEFAULT_Ki);
+        Kd = scalePID_d(DEFAULT_Kd);
 
-#ifdef PID_ADD_EXTRUSION_RATE
-    Kc = DEFAULT_Kc;
-#endif//PID_ADD_EXTRUSION_RATE
-#endif//PIDTEMP
+        // call updatePID (similar to when we have processed M301)
+        updatePID();
 
-SERIAL_ECHO_START;
-SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");
+    #ifdef PID_ADD_EXTRUSION_RATE
+        Kc = DEFAULT_Kc;
+    #endif//PID_ADD_EXTRUSION_RATE
+    #endif//PIDTEMP
 
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");
+}
+
+void store_statistics(){
+  long statistics_total_print_time_buffer = statistics_total_print_time;
+  int statistics_prints_finished_buffer = statistics_prints_finished;
+  int statistics_prints_stopped_buffer = statistics_prints_stopped;
+  Config_RetrieveSettings();
+  statistics_total_print_time = statistics_total_print_time_buffer;
+  statistics_prints_finished = statistics_prints_finished_buffer;
+  statistics_prints_stopped = statistics_prints_stopped_buffer;
+  Config_StoreSettings();
 }

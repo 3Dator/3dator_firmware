@@ -21,6 +21,8 @@
 #include "fastio.h"
 #include "Configuration.h"
 #include "pins.h"
+#define byte uint8_t
+#include "ultralcd.h"
 
 #ifndef AT90USB
 #define  HardwareSerial_h // trick to disable the standard HWserial
@@ -204,6 +206,13 @@ void setPwmFrequency(uint8_t pin, int val);
   #define CRITICAL_SECTION_END    SREG = _sreg;
 #endif //CRITICAL_SECTION_START
 
+extern byte led_display_right;
+extern byte led_display_left;
+
+extern bool print_finished;
+extern void perform_print_started();
+extern void perform_print_finished();
+
 extern float homing_feedrate[];
 extern bool axis_relative_modes[];
 extern int feedmultiply;
@@ -237,9 +246,9 @@ extern unsigned char fanSpeedSoftPwm;
 #endif
 
 #ifdef FILAMENT_SENSOR
-  extern float filament_width_nominal;  //holds the theoretical filament diameter ie., 3.00 or 1.75 
-  extern bool filament_sensor;  //indicates that filament sensor readings should control extrusion  
-  extern float filament_width_meas; //holds the filament diameter as accurately measured 
+  extern float filament_width_nominal;  //holds the theoretical filament diameter ie., 3.00 or 1.75
+  extern bool filament_sensor;  //indicates that filament sensor readings should control extrusion
+  extern float filament_width_meas; //holds the filament diameter as accurately measured
   extern signed char measurement_delay[];  //ring buffer to delay measurement
   extern int delay_index1, delay_index2;  //index into ring buffer
   extern float delay_dist; //delay distance counter

@@ -61,8 +61,6 @@
 #include <SPI.h>
 #endif
 
-#define VERSION_STRING  "1.0.0"
-
 // look here for descriptions of G-codes: http://linuxcnc.org/handbook/gcode/g-code.html
 // http://objects.reprap.org/wiki/Mendel_User_Manual:_RepRapGCodes
 
@@ -181,6 +179,7 @@
 // M908 - Control digital trimpot directly.
 // M350 - Set microstepping mode.
 // M351 - Toggle MS1 MS2 pins directly.
+// M370 - Clear Heatbed.
 
 // ************ SCARA Specific - This can change to suit future G-code regulations
 // M360 - SCARA calibration: Move to cal-position ThetaA (0 deg calibration)
@@ -210,6 +209,23 @@ CardReader card;
 
 //3Dator
 bool fan_on[EXTRUDERS] = {false};
+long inactive_time = millis()/1000;
+byte save_brightness = 255;
+extern void detect_inactivity();
+extern void show_heat_led();
+void check_for_heatbed();
+#ifdef FILAMENT_DETECTOR_PIN
+void check_filament_empty();
+#endif
+void unload_filament();
+void load_filament();
+
+bool set_inactive = false;
+byte led_display_right = 0;
+byte led_display_left = 0;
+
+bool print_finished = true;
+bool filament_empty = false;
 
 float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
@@ -537,7 +553,7 @@ void setup()
   MCUSR=0;
 
   SERIAL_ECHOPGM(MSG_MARLIN);
-  SERIAL_ECHOLNPGM(VERSION_STRING);
+  SERIAL_ECHOLNPGM(STRING_VERSION_NUMBER);
   #ifdef STRING_VERSION_CONFIG_H
     #ifdef STRING_CONFIG_H_AUTHOR
       SERIAL_ECHO_START;
@@ -564,25 +580,9 @@ void setup()
 
   //3Dator
   Wire.begin();
-
-  if(STARTCHECK>0){
-    //Routine that helps checking, if everything is working like it should.
-    /*
-    	1. check if STARTCHECK Variable is 1, if not the check has already been done.
-      2. check the Endstops. Wait until user has tested each endstop by hand.
-      3. check if XYZ motors work the right way, by driving each motor by the knob. Like in the prepare menu.
-      4. time for first auto home.
-      5. fan test
-      6. SET_Z_OFFSET
-      7. thermistor test heat everything to 30°C
-      8. set STARTCHECK to 0, so it wont open again
-
-    */
-    lcd_test_menu();
-    
-
-  }
+  SetBrightness(led_brightness);
   SendColors(255,255,255,3,0);
+
   tp_init();    // Initialize temperature loop
   plan_init();  // Initialize planner;
   watchdog_init();
@@ -591,7 +591,6 @@ void setup()
   servo_init();
 
   lcd_init();
-  _delay_ms(1000);	// wait 1sec to display the splash screen
 
   #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
     SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
@@ -652,6 +651,18 @@ void loop()
   manage_inactivity();
   checkHitEndstops();
   lcd_update();
+  detect_inactivity();
+  check_for_heatbed(); //check if heatbed is presend when printing
+  #ifdef FILAMENT_DETECTOR_PIN
+  check_filament_empty(); //check if filament ran out
+  #endif
+  //will need a bit more testing
+  //show_heat_led();
+  //check if print has finished
+  //all moves longer as 1 min are considered as a print
+  if(millis()/60000 - starttime/60000 > 1 && (!movesplanned() || !IS_SD_PRINTING) && !print_finished){
+    perform_print_finished();
+  }
 }
 
 void get_command()
@@ -788,20 +799,9 @@ void get_command()
        serial_count >= (MAX_CMD_SIZE - 1)||n==-1)
     {
       if(card.eof()){
-        SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
-        stoptime=millis();
-        char time[30];
-        unsigned long t=(stoptime-starttime)/1000;
-        int hours, minutes;
-        minutes=(t/60)%60;
-        hours=t/60/60;
-        sprintf_P(time, PSTR("%i hours %i minutes"),hours, minutes);
-        SERIAL_ECHO_START;
-        SERIAL_ECHOLN(time);
-        lcd_setstatus(time);
+        lcd_setstatus(WELCOME_MSG);
         card.printingHasFinished();
         card.checkautostart(true);
-
       }
       if(serial_char=='#')
         stop_buffering=true;
@@ -1933,7 +1933,7 @@ void process_commands()
       break;
     case 24: //M24 - Start SD print
       card.startFileprint();
-      starttime=millis();
+      if(print_finished) perform_print_started();
       break;
     case 25: //M25 - Pause SD print
       card.pauseSDPrint();
@@ -2003,7 +2003,7 @@ void process_commands()
             card.setIndex(code_value_long());
         card.startFileprint();
         if(!call_procedure)
-          starttime=millis(); //procedure calls count as normal print time.
+          if(print_finished) perform_print_started(); //procedure calls count as normal print time.
       }
     } break;
     case 928: //M928 - Start SD write
@@ -2020,9 +2020,8 @@ void process_commands()
 
     case 31: //M31 take time since the start of the SD print or an M109 command
       {
-      stoptime=millis();
       char time[30];
-      unsigned long t=(stoptime-starttime)/1000;
+      unsigned long t=(millis()-starttime)/1000;
       int sec,min;
       min=t/60;
       sec=t%60;
@@ -2420,7 +2419,7 @@ Sigma_Exit:
     case 109:
     {
       // M109 - Wait for extruder heater to reach target.
-      SendColors(255,20,0,3,0);
+      SendColors(255,20,0,8,2);
       if(setTargetedHotend(109)){
         break;
       }
@@ -2508,14 +2507,12 @@ Sigma_Exit:
         #endif //TEMP_RESIDENCY_TIME
         }
         LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
-//        enquecommand_P(PSTR("M150 R255 U50 B00 P0"));
-        starttime=millis();
+        if(print_finished) perform_print_started();
         previous_millis_cmd = millis();
       }
       break;
     case 190: // M190 - Wait for bed heater to reach target.
-//    enquecommand_P(PSTR("M150 R255 U3 B0 P0"));
-    SendColors(255,20,0,3,0);
+    SendColors(255,20,0,8,2);
     #if defined(TEMP_BED_PIN) && TEMP_BED_PIN > -1
         LCD_MESSAGEPGM(MSG_BED_HEATING);
         if (code_seen('S')) {
@@ -2530,7 +2527,7 @@ Sigma_Exit:
         cancel_heatup = false;
         target_direction = isHeatingBed(); // true if heating, false if cooling
 
-        while ( (target_direction)&&(!cancel_heatup) ? (isHeatingBed()) : (isCoolingBed()&&(CooldownNoWait==false)) )
+        while ((target_direction)&&(!cancel_heatup) ? (isHeatingBed()) : (isCoolingBed()&&(CooldownNoWait==false)) )
         {
           if(( millis() - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up.
           {
@@ -2548,13 +2545,11 @@ Sigma_Exit:
           manage_inactivity();
           lcd_update();
         }
-//        enquecommand_P(PSTR("M150 R255 U50 B00 P0"));
         LCD_MESSAGEPGM(MSG_BED_DONE);
         previous_millis_cmd = millis();
     #endif
         break;
 
-    #if defined(FAN_PIN) && FAN_PIN > -1
       //3Dator
       case 106: //M106 Fan On
       {
@@ -2574,7 +2569,6 @@ Sigma_Exit:
       }
       break;
 
-    #endif //FAN_PIN
     #ifdef BARICUDA
       // PWM for HEATER_1_PIN
       #if defined(HEATER_1_PIN) && HEATER_1_PIN > -1
@@ -3371,6 +3365,43 @@ Sigma_Exit:
       }
       break;
 	#endif
+  #ifdef HASBELTBED  
+    case 370: //M370 clear Heatbed with Belt
+    {
+      st_synchronize();
+      setTargetBed(0);
+      while(digitalRead(HEATER_BED_PIN) == HIGH){
+        manage_heater();
+        manage_inactivity();
+      } //wait till the bed isn't heated anymore
+      
+      LCD_MESSAGEPGM("emptying bed");
+      codenum = 0;
+      if(code_seen('S')) codenum = code_value() * 1000; // seconds to wait
+
+      st_synchronize();
+      previous_millis_cmd = millis();
+      if (codenum > 0){
+        codenum += millis();  // keep track of when we started waiting
+        analogWrite(4, 255);
+        while(millis()  < codenum && !lcd_clicked()){
+          manage_heater();
+          manage_inactivity();
+          lcd_update();
+        }
+      }
+      else{
+        while(!lcd_clicked()){
+          manage_heater();
+          manage_inactivity();
+          lcd_update();
+          }
+      }
+      LCD_MESSAGEPGM(MSG_RESUMING);
+      analogWrite(4, 0);
+    }
+    break;
+  #endif
     case 400: // M400 finish all moves
     {
       st_synchronize();
@@ -3533,15 +3564,15 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
         //retract by E
         if(code_seen('E'))
         {
-          target[E_AXIS]+= code_value();
+          target[E_AXIS]-= code_value();
         }
         else
         {
           #ifdef FILAMENTCHANGE_FIRSTRETRACT
-            target[E_AXIS]+= FILAMENTCHANGE_FIRSTRETRACT ;
+            target[E_AXIS]-= FILAMENTCHANGE_FIRSTRETRACT ;
           #endif
         }
-        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder);
+        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 60, active_extruder);
 
         //lift Z
         if(code_seen('Z'))
@@ -3554,7 +3585,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
             target[Z_AXIS]+= FILAMENTCHANGE_ZADD ;
           #endif
         }
-        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder);
+        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 60, active_extruder);
 
         //move xy
         if(code_seen('X'))
@@ -3578,54 +3609,45 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
           #endif
         }
 
-        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder);
+        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 60, active_extruder);
 
         if(code_seen('L'))
         {
-          target[E_AXIS]+= code_value();
+          target[E_AXIS]-= code_value();
         }
         else
         {
           #ifdef FILAMENTCHANGE_FINALRETRACT
-            target[E_AXIS]+= FILAMENTCHANGE_FINALRETRACT ;
+            target[E_AXIS]-= FILAMENTCHANGE_FINALRETRACT;
           #endif
         }
 
-        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder);
-
+        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 60, active_extruder);        
         //finish moves
         st_synchronize();
+
+        target[E_AXIS] = current_position[E_AXIS];
         //disable extruder steppers so filament can be removed
         disable_e0();
         disable_e1();
         disable_e2();
         delay(100);
         LCD_ALERTMESSAGEPGM(MSG_FILAMENTCHANGE);
-        uint8_t cnt=0;
         while(!lcd_clicked()){
-          cnt++;
           manage_heater();
           manage_inactivity();
           lcd_update();
+
+          //target[E_AXIS]+=0.1;
+          //current_position[E_AXIS]=target[E_AXIS];
+          //plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 10, active_extruder);
+          //st_synchronize();
         }
 
-        //return to normal
-        if(code_seen('L'))
-        {
-          target[E_AXIS]+= -code_value();
-        }
-        else
-        {
-          #ifdef FILAMENTCHANGE_FINALRETRACT
-            target[E_AXIS]+=(-1)*FILAMENTCHANGE_FINALRETRACT ;
-          #endif
-        }
-        current_position[E_AXIS]=target[E_AXIS]; //the long retract of L is compensated by manual filament feeding
+        filament_empty = false;
         plan_set_e_position(current_position[E_AXIS]);
-        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder); //should do nothing
-        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder); //move xy back
-        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder); //move z back
-        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], lastpos[E_AXIS], feedrate/60, active_extruder); //final untretract
+        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], 60, active_extruder); //move xy back
+        plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], 60, active_extruder); //move z back
     }
     break;
     #endif //FILAMENTCHANGEENABLE
@@ -3749,12 +3771,15 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 
   else if(code_seen('T'))
   {
+    byte old_extruder = tmp_extruder;
     tmp_extruder = code_value();
+    //byte new_extruder = tmp_extruder;
     if(tmp_extruder >= EXTRUDERS) {
       SERIAL_ECHO_START;
       SERIAL_ECHO("T");
       SERIAL_ECHO(tmp_extruder);
       SERIAL_ECHOLN(MSG_INVALID_EXTRUDER);
+      tmp_extruder = old_extruder;
     }
     else {
       boolean make_move = false;
@@ -4484,3 +4509,88 @@ bool setTargetedHotend(int code){
   }
   return false;
 }
+
+void detect_inactivity(){
+  if(lcd_clicked() || encoderPosition > 0 || movesplanned() || IS_SD_PRINTING){
+    inactive_time = millis()/1000;
+  }
+  if((millis()/1000 - inactive_time) > INACTIVE_TIME && set_inactive == false){
+    set_inactive = true;
+    save_brightness = SetBrightness(50);
+    disable_heater();
+    SendFanPWM(0);
+    disable_x();
+    disable_y();
+    disable_z();
+    disable_e0();
+    disable_e1();
+    disable_e2();
+    manage_heater();
+  }
+  if(set_inactive == true && (millis()/1000 - inactive_time) <= INACTIVE_TIME){
+    set_inactive = false;
+    SetBrightness(save_brightness);
+  }
+}
+
+void show_heat_led(){
+  byte led_display_right_buffer = led_display_right;
+  byte led_display_left_buffer = led_display_left;
+  led_display_right = (degBed()-25)/8.0;
+  led_display_left = (degHotend(0)-30)/50.0;
+  if(led_display_left_buffer != led_display_left || led_display_right_buffer != led_display_right){
+    SendStopOverwriteRange(0,54);
+    SendOverwriteRange(0, led_display_left, 255, 0, 0);
+    SendOverwriteRange(54-led_display_right, 54, 255, 0, 0);
+  }
+}
+
+void check_for_heatbed(){
+  if(!print_finished){
+    if(degBed() == 0) LCD_MESSAGEPGM(HEATBED_MISSING);
+    while(degBed() == 0){
+      manage_heater();
+      manage_inactivity();
+      lcd_update();
+    }
+  }
+}
+
+//functions that get once called a print started and once it is done
+void perform_print_started(){
+  starttime = millis();
+  stoptime = 0;
+  print_finished = false;
+  babysteps = 0;
+}
+
+void perform_print_finished(){
+  statistics_total_print_time += millis()/60000 - starttime/60000;
+  statistics_prints_finished++;
+  store_statistics();
+  stoptime=millis();
+  print_finished = true;
+}
+
+#ifdef FILAMENT_DETECTOR_PIN
+void check_filament_empty(){
+  //if filament is empty
+  if(digitalRead(FILAMENT_DETECTOR_PIN) && print_finished = false && !filament_empty){
+    st_synchronize();
+    tone(BEEPER, 1800);
+    delay(150);
+    noTone(BEEPER);
+
+    tone(BEEPER, 2200);
+    delay(150);
+    noTone(BEEPER);
+
+    tone(BEEPER, 2500);
+    delay(250);
+    noTone(BEEPER);
+
+    enquecommand_P(PSTR("M600"));
+    filament_empty = true;
+  }
+}
+#endif  //FILAMENT_DETECTOR_PIN

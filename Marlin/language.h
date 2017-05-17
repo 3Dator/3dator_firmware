@@ -3,7 +3,7 @@
 
 // NOTE: IF YOU CHANGE THIS FILE / MERGE THIS FILE WITH CHANGES
 //
-//   ==> ALWAYS TRY TO COMPILE MARLIN WITH/WITHOUT "ULTIPANEL" / "ULTRALCD" / "SDSUPPORT" #define IN "Configuration.h" 
+//   ==> ALWAYS TRY TO COMPILE MARLIN WITH/WITHOUT "ULTIPANEL" / "ULTRALCD" / "SDSUPPORT" #define IN "Configuration.h"
 //   ==> ALSO TRY ALL AVAILABLE "LANGUAGE_CHOICE" OPTIONS
 
 // Languages
@@ -81,7 +81,7 @@
 	#define MSG_DISABLE_STEPPERS "Disable steppers"
 	#define MSG_AUTO_HOME "Auto home"
 	#define MSG_SET_ORIGIN "Set origin"
-	#define MSG_PREHEAT_PLA "Preheat PLA"
+	#define MSG_PREHEAT_PLA "Preheat"
 	#define MSG_PREHEAT_PLA0 "Preheat PLA 1"
 	#define MSG_PREHEAT_PLA1 "Preheat PLA 2"
 	#define MSG_PREHEAT_PLA2 "Preheat PLA 3"
@@ -120,7 +120,7 @@
 	#define MSG_FLOW0 "Flow 0"
 	#define MSG_FLOW1 "Flow 1"
 	#define MSG_FLOW2 "Flow 2"
-	#define MSG_CONTROL "Control"
+	#define MSG_CONTROL "Settings"
 	#define MSG_MIN " \002 Min"
 	#define MSG_MAX " \002 Max"
 	#define MSG_FACTOR " \002 Fact"
@@ -184,10 +184,24 @@
 	#define MSG_ZPROBE_ZOFFSET "Z Offset"
 	#define MSG_BABYSTEP_X "Babystep X"
 	#define MSG_BABYSTEP_Y "Babystep Y"
-	#define MSG_BABYSTEP_Z "Babystep Z"
+	#define MSG_BABYSTEP_Z "adjust bed height"
 	#define MSG_ENDSTOP_ABORT "Endstop abort"
     #define MSG_SET_Z_OFFSET "Set Z offset"
     #define MSG_NOZZLECHANGE "Change Nozzle"
+		#define	MSG_TEST_MENU	"Test menu"
+		#define MSG_ABOUT "About"
+		#define MSG_LED_MENU "LED Menu"
+		#define MSG_LED_BRIGHTNESS "LED brightness"
+		#define MSG_LED_RED "value red"
+		#define MSG_LED_GREEN "value green"
+		#define MSG_LED_BLUE "value blue"
+		#define MSG_LED_OFF "LEDs full off"
+		#define MSG_LED_ON "LEDs full on"
+		#define MSG_STATISTICS "Statistics"
+		#define MSG_PRINT_TIME "printtime"
+		#define MSG_PRINTS_STOPPED "Prints stopped"
+		#define MSG_PRINTS_FINISHED "Prints finished"
+		#define HEATBED_MISSING "Heatbed missing"
 
 // Serial Console Messages
 
@@ -262,7 +276,7 @@
 	#define MSG_ERR_LONG_EXTRUDE_STOP " too long extrusion prevented"
 	#define MSG_BABYSTEPPING_X "Babystepping X"
 	#define MSG_BABYSTEPPING_Y "Babystepping Y"
-	#define MSG_BABYSTEPPING_Z "Babystepping Z"
+	#define MSG_BABYSTEPPING_Z "adjust height"
 	#define MSG_SERIAL_ERROR_MENU_STRUCTURE "Error in menu structure"
 
 #endif
@@ -684,7 +698,7 @@
 	#define MSG_DISABLE_STEPPERS "Stepper abschalt."
 	#define MSG_AUTO_HOME        "Auto Nullpunkt"
 	#define MSG_SET_ORIGIN       "Setze Nullpunkt"
-	#define MSG_PREHEAT_PLA      "Vorwärmen PLA"
+	#define MSG_PREHEAT_PLA      "Vorwärmen"
 	#define MSG_PREHEAT_PLA0     "Vorwärmen PLA 1"
 	#define MSG_PREHEAT_PLA1     "Vorwärmen PLA 2"
 	#define MSG_PREHEAT_PLA2     "Vorwärmen PLA 3"
@@ -789,10 +803,26 @@
 	#define MSG_ZPROBE_ZOFFSET "Z Offset"
 	#define MSG_BABYSTEP_X "Babystep X"
 	#define MSG_BABYSTEP_Y "Babystep Y"
-	#define MSG_BABYSTEP_Z "Babystep Z"
+	#define MSG_BABYSTEP_Z "Betthöhe anpassen"
 	#define MSG_ENDSTOP_ABORT "Endstop abort"
 	#define MSG_CONTRAST "Contrast"
     #define MSG_SET_Z_OFFSET "Z Versatz setzen"
+    #define MSG_NOZZLECHANGE "Düse wechseln"
+		#define	MSG_TEST_MENU	"Test Menü"
+		#define MSG_ABOUT "About"
+		#define MSG_LED_MENU "LED Menü"
+		#define MSG_LED_BRIGHTNESS "LED Helligkeit"
+		#define MSG_LED_RED "Rot-Wert"
+		#define MSG_LED_GREEN "Grün-Wert"
+		#define MSG_LED_BLUE "Blau-Wert"
+		#define MSG_LED_OFF "LEDs komplett aus"
+		#define MSG_LED_ON "LEDs komplett an"
+		#define MSG_STATISTICS "Statistiken"
+		#define MSG_PRINT_TIME "Druckzeit"
+		#define MSG_PRINTS_STOPPED "Drucke gestoppt"
+		#define MSG_PRINTS_FINISHED "Fertige Drucke"
+		#define HEATBED_MISSING "Heizbett fehlt"
+
 
 // Serial Console Messages
 
@@ -867,7 +897,7 @@
 	#define MSG_ERR_LONG_EXTRUDE_STOP " too long extrusion prevented"
 	#define MSG_BABYSTEPPING_X "Babystepping X"
 	#define MSG_BABYSTEPPING_Y "Babystepping Y"
-	#define MSG_BABYSTEPPING_Z "Babystepping Z"
+	#define MSG_BABYSTEPPING_Z "adjust height"
 	#define MSG_SERIAL_ERROR_MENU_STRUCTURE "Error in menu structure"
 
 #endif
@@ -2600,7 +2630,7 @@
 	#define MSG_BABYSTEP_Y "Babystep Y"
 	#define MSG_BABYSTEP_Z "Babystep Z"
 	#define MSG_ENDSTOP_ABORT "Endstop deuseztat"
-	
+
 // Serial Console Messages
 
 	#define MSG_Enqueing "Zerrendan \""
@@ -2676,7 +2706,7 @@
 	#define MSG_BABYSTEPPING_Y "Babystepping Y"
 	#define MSG_BABYSTEPPING_Z "Babystepping Z"
 	#define MSG_SERIAL_ERROR_MENU_STRUCTURE "Akatsak menu-an"
-	
+
 #endif
 
 #endif // ifndef LANGUAGE_H

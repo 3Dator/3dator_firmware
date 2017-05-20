@@ -619,14 +619,39 @@ static void lcd_implementation_drawmenu_sdfile_selected(uint8_t row, const char*
         filename = longFilename;
         longFilename[LCD_WIDTH-1] = '\0';
     }
-    while( ((c = *filename) != '\0') && (n>0) )
+    /*while( ((c = *filename) != '\0') && (n>0) )
     {
         lcd.print(c);
         filename++;
         n--;
-    }
-    while(n--)
-        lcd.print(' ');
+    }*/
+    static uint8_t messageOffset=0;
+     uint8_t i=0;
+     for(uint8_t i=0;i<LCD_WIDTH;i++){
+     	lcd.setCursor(i, LCD_HEIGHT - 1);
+ 		if(i+messageOffset < strlen(filename)){
+ 			lcd.print(filename[(i+messageOffset)]);
+ 			// empty == case for space between messages
+ 		}else if(strlen(filename) > LCD_WIDTH){
+ 			if(i+messageOffset > strlen(filename)){
+ 				lcd.print(filename[(i-1+messageOffset)-strlen(filename)]);
+ 			}else{
+ 				lcd.print(" ");
+ 			}
+ 		}else{
+ 			lcd.print(" ");
+ 		}
+ 		
+     }
+     if(strlen(filename) > LCD_WIDTH){
+     	if(++messageOffset > strlen(filename)){
+ 			messageOffset=0;
+ 		}
+     }else{
+     	messageOffset=0;
+     }
+    /*while(n--)
+        lcd.print(' ');*/
 }
 static void lcd_implementation_drawmenu_sdfile(uint8_t row, const char* pstr, const char* filename, char* longFilename)
 {

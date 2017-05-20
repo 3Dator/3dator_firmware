@@ -317,6 +317,7 @@ static void lcd_sdcard_stop()
 
     lcd_setstatus(WELCOME_MSG);
     enquecommand_P(PSTR("G28"));
+    st_synchronize();
     //steppers off
     enquecommand_P(PSTR(SD_FINISHED_RELEASECOMMAND));
 

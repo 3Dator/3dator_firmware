@@ -4561,6 +4561,7 @@ void perform_print_started(){
   starttime = millis();
   stoptime = 0;
   print_finished = false;
+  filament_empty = false;
   babysteps = 0;
 }
 
@@ -4575,7 +4576,7 @@ void perform_print_finished(){
 #ifdef FILAMENT_DETECTOR_PIN
 void check_filament_empty(){
   //if filament is empty
-  if(digitalRead(FILAMENT_DETECTOR_PIN) && print_finished = false && !filament_empty){
+  if(digitalRead(FILAMENT_DETECTOR_PIN) && !print_finished && !filament_empty){
     st_synchronize();
     tone(BEEPER, 1800);
     delay(150);

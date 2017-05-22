@@ -220,6 +220,8 @@ void check_filament_empty();
 void unload_filament();
 void load_filament();
 
+int no_moves_for = 0;
+
 bool set_inactive = false;
 byte led_display_right = 0;
 byte led_display_left = 0;
@@ -459,6 +461,8 @@ void enquecommand(const char *cmd)
     SERIAL_ECHOLNPGM("\"");
     bufindw= (bufindw + 1)%BUFSIZE;
     buflen += 1;
+  }else{
+    SERIAL_ECHOPGM("cannot enqueue, buffer full \"");
   }
 }
 
@@ -474,6 +478,8 @@ void enquecommand_P(const char *cmd)
     SERIAL_ECHOLNPGM("\"");
     bufindw= (bufindw + 1)%BUFSIZE;
     buflen += 1;
+  }else{
+    SERIAL_ECHOPGM("cannot enqueue, buffer full \"");
   }
 }
 
@@ -608,7 +614,7 @@ void setup()
 
 void loop()
 {
-  if(buflen < (BUFSIZE-1))
+  if(buflen < (BUFSIZE-2))
     get_command();
   #ifdef SDSUPPORT
   card.checkautostart(false);
@@ -658,10 +664,17 @@ void loop()
   #endif
   //will need a bit more testing
   //show_heat_led();
+
   //check if print has finished
   //all moves longer as 1 min are considered as a print
-  if(millis()/60000 - starttime/60000 > 1 && (!movesplanned() || !IS_SD_PRINTING) && !print_finished){
-    perform_print_finished();
+  if(millis()/60000 - starttime/60000 > 1 && !movesplanned() && !IS_SD_PRINTING && !print_finished){
+    if(no_moves_for == 0)
+    {
+      no_moves_for = millis();
+    //if no moves are made for half a min print is considered finished
+    }else if(no_moves_for+30000 < millis() && filament_empty == false){
+      perform_print_finished();
+    }
   }
 }
 
@@ -789,7 +802,7 @@ void get_command()
   static bool stop_buffering=false;
   if(buflen==0) stop_buffering=false;
 
-  while( !card.eof()  && buflen < BUFSIZE && !stop_buffering) {
+  while( !card.eof()  && buflen < BUFSIZE-2 && !stop_buffering) {
     int16_t n=card.get();
     serial_char = (char)n;
     if(serial_char == '\n' ||
@@ -3631,7 +3644,6 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
         disable_e0();
         disable_e1();
         disable_e2();
-        delay(100);
         LCD_ALERTMESSAGEPGM(MSG_FILAMENTCHANGE);
         while(!lcd_clicked()){
           manage_heater();
@@ -3643,11 +3655,12 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
           //plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 10, active_extruder);
           //st_synchronize();
         }
-
-        filament_empty = false;
+        
         plan_set_e_position(current_position[E_AXIS]);
         plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], 60, active_extruder); //move xy back
         plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], 60, active_extruder); //move z back
+        st_synchronize();
+        filament_empty = false;
     }
     break;
     #endif //FILAMENTCHANGEENABLE
@@ -4304,7 +4317,7 @@ void handle_status_leds(void) {
 
 void manage_inactivity()
 {
-  if(buflen < (BUFSIZE-1))
+  if(buflen < (BUFSIZE-2))
     get_command();
 
   if( (millis() - previous_millis_cmd) >  max_inactive_time )
@@ -4558,6 +4571,7 @@ void check_for_heatbed(){
 
 //functions that get once called a print started and once it is done
 void perform_print_started(){
+  SERIAL_PROTOCOL("[INFO] perform_print_started was called!\n"); //TODO remove this, this is only for debugging
   starttime = millis();
   stoptime = 0;
   print_finished = false;
@@ -4565,6 +4579,7 @@ void perform_print_started(){
 }
 
 void perform_print_finished(){
+  SERIAL_PROTOCOL("[INFO] perform_print_finished was called!\n"); //TODO remove this, this is only for debugging
   statistics_total_print_time += millis()/60000 - starttime/60000;
   statistics_prints_finished++;
   store_statistics();
@@ -4575,7 +4590,7 @@ void perform_print_finished(){
 #ifdef FILAMENT_DETECTOR_PIN
 void check_filament_empty(){
   //if filament is empty
-  if(digitalRead(FILAMENT_DETECTOR_PIN) && print_finished = false && !filament_empty){
+  if(digitalRead(FILAMENT_DETECTOR_PIN) && print_finished == false && !filament_empty){
     st_synchronize();
     tone(BEEPER, 1800);
     delay(150);
@@ -4589,6 +4604,8 @@ void check_filament_empty(){
     delay(250);
     noTone(BEEPER);
 
+    //make sure buffer is empty
+    st_synchronize();
     enquecommand_P(PSTR("M600"));
     filament_empty = true;
   }

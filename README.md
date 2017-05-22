@@ -109,3 +109,9 @@ http://wiki.3dator.com
 * changed heating up animation
 * added easy configuration for E3D Titan extruder upgrade
 * fixed printtime won't stop after print is finished
+
+22.05.2017 (1.2.1)
+* fixed printtime stayed at 0:00 when printing
+* made buffer longer and fixed homing and turn off steppes when print stopped
+* made sd card file names scroll (thanks to sebastiandeppisch)
+* worked on filament detection

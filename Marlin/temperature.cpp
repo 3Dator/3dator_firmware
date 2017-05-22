@@ -498,7 +498,7 @@ void manage_heater()
       SendRearFanPWM(REAR_FAN_POWER);
       fan_on[e] = true;
     }
-    if(current_temperature[e] < FAN_ON_TEMP && fan_on[e] == true){
+    if(current_temperature[e] < (FAN_ON_TEMP-5) && fan_on[e] == true){
       SendRearFanPWM(0);
       fan_on[e] = false;
     }

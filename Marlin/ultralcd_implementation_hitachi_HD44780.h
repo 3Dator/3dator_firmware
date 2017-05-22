@@ -463,9 +463,9 @@ if(starttime != 0 and card.percentDoneFloat() > 0.3){
         uint16_t time;
 
         if(!print_finished){
-          uint16_t time = millis()/60000 - starttime/60000;
+          time = millis()/60000 - starttime/60000;
         }else{
-          uint16_t time = statistics_total_print_time;
+          time = statistics_total_print_time;
         }
         
 

@@ -163,7 +163,7 @@
 #define DATOR_DUAL 0
 
 //Uncomment the next line to enable Filament detection
-#define FILAMENT_DETECTOR_PIN 2
+//#define FILAMENT_DETECTOR_PIN 2
 
 //this enables experimental Belt feature
 // 0 standart Heatbed

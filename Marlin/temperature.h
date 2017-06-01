@@ -39,12 +39,6 @@ void manage_heater(); //it is critical that this is called periodically.
  int widthFil_to_size_ratio();
 #endif
 
-#if EXTRUDERS == 1 && VIRTUAL_NOZZLES == false
-  #define HOTEND_INDEX  0
-#else
-  #define HOTEND_INDEX  e
-#endif
-
 // low level conversion routines
 // do not use these routines and variables outside of temperature.cpp
 extern int target_temperature[EXTRUDERS];

@@ -293,7 +293,7 @@ static void lcd_sdcard_stop()
     card.sdprinting = false;
     card.closefile();
     quickStop();
-    
+
     statistics_prints_stopped++;
     statistics_total_print_time += millis()/60000 - starttime/60000;
     store_statistics();
@@ -419,7 +419,7 @@ static void lcd_tune_menu()
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
 
     MENU_ITEM_EDIT(int3, MSG_FLOW, &extrudemultiply, 10, 999);
-    
+
 #if TEMP_SENSOR_1 != 0
     MENU_ITEM_EDIT(int3, MSG_FLOW0, &extruder_multiply[0], 10, 999);
     MENU_ITEM_EDIT(int3, MSG_FLOW1, &extruder_multiply[1], 10, 999);
@@ -717,7 +717,7 @@ static void lcd_control_set_z_offset()
             lcd_quick_feedback();
             enquecommand_P(PSTR("M500"));
             enquecommand_P(PSTR("G28 Z"));
-            currentMenu = lcd_control_menu;
+            currentMenu = lcd_prepare_menu;
             homing_for_z_offset_done = false;
             encoderPosition = 0;
         }

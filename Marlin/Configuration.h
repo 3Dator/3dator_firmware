@@ -359,8 +359,12 @@ your extruder heater takes 2 minutes to hit the target on heating.
    * If you get false positives for "Heating failed" increase WATCH_TEMP_PERIOD and/or decrease WATCH_TEMP_INCREASE
    * WATCH_TEMP_INCREASE should not be below 2.
    */
+  #define WATCH_HOTENDS TRUE
+
   #define WATCH_TEMP_PERIOD 20                // Seconds
   #define WATCH_TEMP_INCREASE 2               // Degrees Celsius
+
+  #define WATCH_THE_BED TRUE
 
   #define WATCH_BED_TEMP_PERIOD 60                // Seconds
   #define WATCH_BED_TEMP_INCREASE 2               // Degrees Celsius

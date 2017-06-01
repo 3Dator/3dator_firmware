@@ -75,6 +75,18 @@ extern float current_temperature_bed;
   extern int babysteps;
 #endif
 
+#if WATCH_HOTENDS
+  static uint16_t watch_target_temp[EXTRUDERS];
+  static millis_t watch_heater_next_ms[EXTRUDERS];
+  static void start_watching_heater(uint8_t e = 0);
+#endif
+
+#if WATCH_THE_BED
+  static uint16_t watch_target_bed_temp;
+  static millis_t watch_bed_next_ms;
+  static void start_watching_bed();
+#endif
+
 //high level conversion routines, for use outside of temperature.cpp
 //inline so that there is no performance decrease.
 //deg=degreeCelsius
@@ -107,6 +119,9 @@ FORCE_INLINE float degTargetBed() {
 
 FORCE_INLINE void setTargetHotend(const float &celsius, uint8_t extruder) {
   target_temperature[extruder] = celsius;
+  #if WATCH_HOTENDS
+    start_watching_heater(HOTEND_INDEX);
+  #endif
 };
 
 FORCE_INLINE void setTargetBed(const float &celsius) {

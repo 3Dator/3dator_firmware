@@ -163,7 +163,7 @@
 #define DATOR_DUAL 0
 
 //Uncomment the next line to enable Filament detection
-#define FILAMENT_DETECTOR_PIN 2
+//#define FILAMENT_DETECTOR_PIN 2
 
 //this enables experimental Belt feature
 // 0 standart Heatbed
@@ -364,7 +364,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
   #define WATCH_TEMP_PERIOD 20                // Seconds
   #define WATCH_TEMP_INCREASE 2               // Degrees Celsius
 
-  #define WATCH_THE_BED TRUE
+  #define WATCH_THE_BED FALSE
 
   #define WATCH_BED_TEMP_PERIOD 60                // Seconds
   #define WATCH_BED_TEMP_INCREASE 2               // Degrees Celsius

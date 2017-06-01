@@ -76,16 +76,6 @@ unsigned char soft_pwm_bed;
   int babysteps = 0;
 #endif
 
-#if WATCH_HOTENDS
-  uint16_t watch_target_temp[EXTRUDERS] = { 0 };
-  millis_t watch_heater_next_ms[EXTRUDERS] = { 0 };
-#endif
-
-#if WATCH_THE_BED
-  uint16_t watch_target_bed_temp = 0;
-  millis_t watch_bed_next_ms = 0;
-#endif
-
 #ifdef FILAMENT_SENSOR
   int current_raw_filwidth = 0;  //Holds measured filament diameter - one extruder only
 #endif
@@ -433,10 +423,6 @@ void manage_heater()
 
   updateTemperaturesFromRawValues();
 
-  #if WATCH_HOTENDS || WATCH_THE_BED
-    millis_t ms = millis();
-  #endif
-
   for(int e = 0; e < EXTRUDERS; e++)
   {
 
@@ -507,16 +493,6 @@ void manage_heater()
       soft_pwm[e] = 0;
     }
 
-    #if WATCH_HOTENDS
-      // Make sure temperature is increasing
-      if (watch_heater_next_ms[e] && ELAPSED(ms, watch_heater_next_ms[e])) { // Time to check this extruder?
-        if (degHotend(e) < watch_target_temp[e])                             // Failed to increase enough?
-          _temp_error(e, PSTR(MSG_T_HEATING_FAILED), PSTR(MSG_HEATING_FAILED_LCD));
-        else                                                                 // Start again if the target is still far off
-          start_watching_heater(e);
-      }
-    #endif
-
     //3Dator turn fan speed on for cooling hotend when it gets hot
     if(current_temperature[e] >= FAN_ON_TEMP && fan_on[e] == false){
       SendRearFanPWM(REAR_FAN_POWER);
@@ -565,16 +541,6 @@ void manage_heater()
     extruder_autofan_last_check = millis();
   }
   #endif
-
-  #if WATCH_THE_BED
-    // Make sure temperature is increasing
-    if (watch_bed_next_ms && ELAPSED(ms, watch_bed_next_ms)) {        // Time to check the bed?
-      if (degBed() < watch_target_bed_temp)                           // Failed to increase enough?
-        _temp_error(-1, PSTR(MSG_T_HEATING_FAILED), PSTR(MSG_HEATING_FAILED_LCD));
-      else                                                            // Start again if the target is still far off
-        start_watching_bed();
-    }
-  #endif // WATCH_THE_BED
 
   #ifndef PIDTEMPBED
   if(millis() - previous_millis_bed_heater < BED_CHECK_INTERVAL)
@@ -1017,41 +983,6 @@ void tp_init()
   }
 #endif //BED_MAXTEMP
 }
-
-#if WATCH_HOTENDS
-  /**
-   * Start Heating Sanity Check for hotends that are below
-   * their target temperature by a configurable margin.
-   * This is called when the temperature is set. (M104, M109)
-   */
-  void start_watching_heater(uint8_t e) {
-    #if EXTRUDERS == 1
-      UNUSED(e);
-    #endif
-    if (degHotend(HOTEND_INDEX) < degTargetHotend(HOTEND_INDEX) - (WATCH_TEMP_INCREASE + TEMP_HYSTERESIS + 1)) {
-      watch_target_temp[HOTEND_INDEX] = degHotend(HOTEND_INDEX) + WATCH_TEMP_INCREASE;
-      watch_heater_next_ms[HOTEND_INDEX] = millis() + (WATCH_TEMP_PERIOD) * 1000UL;
-    }
-    else
-      watch_heater_next_ms[HOTEND_INDEX] = 0;
-  }
-#endif
-
-#if WATCH_THE_BED
-  /**
-   * Start Heating Sanity Check for hotends that are below
-   * their target temperature by a configurable margin.
-   * This is called when the temperature is set. (M140, M190)
-   */
-  void Temperature::start_watching_bed() {
-    if (degBed() < degTargetBed() - (WATCH_BED_TEMP_INCREASE + TEMP_BED_HYSTERESIS + 1)) {
-      watch_target_bed_temp = degBed() + WATCH_BED_TEMP_INCREASE;
-      watch_bed_next_ms = millis() + (WATCH_BED_TEMP_PERIOD) * 1000UL;
-    }
-    else
-      watch_bed_next_ms = 0;
-  }
-#endif
 
 void setWatch()
 {

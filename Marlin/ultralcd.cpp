@@ -317,6 +317,7 @@ static void lcd_sdcard_stop()
 
     lcd_setstatus(WELCOME_MSG);
     enquecommand_P(PSTR("G28"));
+    st_synchronize();
     //steppers off
     enquecommand_P(PSTR(SD_FINISHED_RELEASECOMMAND));
 
@@ -983,6 +984,15 @@ static void lcd_sd_updir()
 
 void lcd_sdcard_menu()
 {
+    static uint8_t updateDelay = 0;
+    if (updateDelay){
+        updateDelay--;
+    }else{
+        lcdDrawUpdate = 1;
+    }
+    if (lcdDrawUpdate){
+       updateDelay = 2;
+    }
     if (lcdDrawUpdate == 0 && LCD_CLICKED == 0)
         return;	// nothing to do (so don't thrash the SD card)
     uint16_t fileCnt = card.getnrfilenames();

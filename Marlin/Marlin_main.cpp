@@ -3644,6 +3644,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
         disable_e0();
         disable_e1();
         disable_e2();
+
         LCD_ALERTMESSAGEPGM(MSG_FILAMENTCHANGE);
         while(!lcd_clicked()){
           manage_heater();
@@ -4575,6 +4576,7 @@ void perform_print_started(){
   starttime = millis();
   stoptime = 0;
   print_finished = false;
+  filament_empty = false;
   babysteps = 0;
 }
 

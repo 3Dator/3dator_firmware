@@ -115,3 +115,4 @@ http://wiki.3dator.com
 * made buffer longer and fixed homing and turn off steppes when print stopped
 * made sd card file names scroll (thanks to sebastiandeppisch)
 * worked on filament detection
+* activated sanity check, printer will stop heating if termistor falls out

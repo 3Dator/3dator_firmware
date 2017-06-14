@@ -166,6 +166,8 @@
 // M405 - Turn on Filament Sensor extrusion control.  Optional D<delay in cm> to set delay in centimeters between sensor and extruder
 // M406 - Turn off Filament Sensor extrusion control
 // M407 - Displays measured filament diameter
+// M408 - Enable Filament detection
+// M409 - Disable Filament detection
 // M500 - stores parameters in EEPROM
 // M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).
 // M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
@@ -215,6 +217,7 @@ extern void detect_inactivity();
 extern void show_heat_led();
 void check_for_heatbed();
 #ifdef FILAMENT_DETECTOR_PIN
+bool filament_detection = false;
 void check_filament_empty();
 #endif
 void unload_filament();
@@ -3378,7 +3381,7 @@ Sigma_Exit:
       }
       break;
 	#endif
-  #ifdef HASBELTBED  
+  #ifdef HASBELTBED
     case 370: //M370 clear Heatbed with Belt
     {
       st_synchronize();
@@ -3387,7 +3390,7 @@ Sigma_Exit:
         manage_heater();
         manage_inactivity();
       } //wait till the bed isn't heated anymore
-      
+
       LCD_MESSAGEPGM("emptying bed");
       codenum = 0;
       if(code_seen('S')) codenum = code_value() * 1000; // seconds to wait
@@ -3489,6 +3492,19 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
 
     SERIAL_PROTOCOLPGM("Filament dia (measured mm):");
     SERIAL_PROTOCOLLN(filament_width_meas);
+    }
+    break;
+    #endif
+
+    #ifdef FILAMENT_DETECTOR_PIN
+    case 408:   //M408 Turn on Filament detection
+    {
+      filament_detection = true;
+    }
+    break;
+    case 409:   //M409 Turn on Filament detection
+    {
+      filament_detection = false;
     }
     break;
     #endif
@@ -3635,7 +3651,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
           #endif
         }
 
-        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 60, active_extruder);        
+        plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 60, active_extruder);
         //finish moves
         st_synchronize();
 
@@ -3656,7 +3672,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
           //plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], 10, active_extruder);
           //st_synchronize();
         }
-        
+
         plan_set_e_position(current_position[E_AXIS]);
         plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], 60, active_extruder); //move xy back
         plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], 60, active_extruder); //move z back
@@ -4592,24 +4608,26 @@ void perform_print_finished(){
 #ifdef FILAMENT_DETECTOR_PIN
 void check_filament_empty(){
   //if filament is empty
-  if(digitalRead(FILAMENT_DETECTOR_PIN) && print_finished == false && !filament_empty){
-    st_synchronize();
-    tone(BEEPER, 1800);
-    delay(150);
-    noTone(BEEPER);
+  if (filament_detection) {
+    if(digitalRead(FILAMENT_DETECTOR_PIN) && !filament_empty){
+      st_synchronize();
+      tone(BEEPER, 1800);
+      delay(150);
+      noTone(BEEPER);
 
-    tone(BEEPER, 2200);
-    delay(150);
-    noTone(BEEPER);
+      tone(BEEPER, 2200);
+      delay(150);
+      noTone(BEEPER);
 
-    tone(BEEPER, 2500);
-    delay(250);
-    noTone(BEEPER);
+      tone(BEEPER, 2500);
+      delay(250);
+      noTone(BEEPER);
 
-    //make sure buffer is empty
-    st_synchronize();
-    enquecommand_P(PSTR("M600"));
-    filament_empty = true;
+      //make sure buffer is empty
+      st_synchronize();
+      enquecommand_P(PSTR("M600"));
+      filament_empty = true;
+    }
   }
 }
 #endif  //FILAMENT_DETECTOR_PIN

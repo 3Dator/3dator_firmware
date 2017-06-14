@@ -3499,7 +3499,15 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
     #ifdef FILAMENT_DETECTOR_PIN
     case 408:   //M408 Turn on Filament detection
     {
-      filament_detection = true;
+      if(code_seen('I')) {
+        if(digitalRead(FILAMENT_DETECTOR_PIN)) {
+          SERIAL_PROTOCOLPGM("Filament detection Triggered (no filament)");
+        } else {
+          SERIAL_PROTOCOLPGM("Filament detection not Triggered (filament present)");
+        }
+      } else {
+        filament_detection = true;
+      }
     }
     break;
     case 409:   //M409 Turn on Filament detection
@@ -3507,7 +3515,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
       filament_detection = false;
     }
     break;
-    #endif
+    #endif //FILAMENT_DETECTION_PIN
 
 
 

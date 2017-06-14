@@ -152,6 +152,9 @@
 //uncomment if you want to use the E3D titan extruder
 //#define E3D_TITAN
 
+//uncomment if you want to use the E3D v6 hotend
+//#define E3D_HOTEND
+
 // Here are some predefined configs for different 3Dator Configurations
 // 1 3Dator Kit from 3Dator.com
 // 2 3Dator Mini
@@ -194,7 +197,11 @@
 #define INACTIVE_TIME 1000
 
 #define FAN_ON_TEMP 50
+#ifdef E3D_HOTEND
+#define REAR_FAN_POWER 255
+#else
 #define REAR_FAN_POWER 120
+#endif
 extern bool fan_on[EXTRUDERS];
 
 // This makes temp sensor 1 a redundant sensor for sensor 0. If the temperatures difference between these sensors is to high the print will be aborted.
@@ -220,7 +227,11 @@ extern bool fan_on[EXTRUDERS];
 #if TEMP_SENSOR_0 == 66
   #define HEATER_0_MAXTEMP 500
 #else
+  #ifdef E3D_HOTEND
+  #define HEATER_0_MAXTEMP 295
+  #else
   #define HEATER_0_MAXTEMP 275
+  #endif
 #endif
 #define HEATER_1_MAXTEMP 275
 #define HEATER_2_MAXTEMP 275
@@ -310,7 +321,7 @@ extern bool fan_on[EXTRUDERS];
 //if PREVENT_DANGEROUS_EXTRUDE is on, you can still disable (uncomment) very long bits of extrusion separately.
 #define PREVENT_LENGTHY_EXTRUDE
 
-#define EXTRUDE_MINTEMP 180
+#define EXTRUDE_MINTEMP 170
 #define EXTRUDE_MAXLENGTH 1000 //prevent extrusion of very large distances.
 
 /*================== Thermal Runaway Protection ==============================

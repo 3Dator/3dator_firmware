@@ -116,3 +116,7 @@ http://wiki.3dator.com
 * made sd card file names scroll (thanks to sebastiandeppisch)
 * worked on filament detection
 * activated sanity check, printer will stop heating if termistor falls out
+
+23.06.2017 (1.2.2)
+* added Support for BLTouch BED Probe
+* added easy configuration for E3Dv6 Hotends

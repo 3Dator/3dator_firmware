@@ -170,7 +170,7 @@
 #define DATOR_DUAL 0
 
 //Uncomment the next line to enable Filament detection
-//#define FILAMENT_DETECTOR_PIN 2
+#define FILAMENT_DETECTOR_PIN 2
 
 
 //activate this, if you use an BLtouch instead of the Inductive Sensor

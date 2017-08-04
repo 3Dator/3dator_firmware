@@ -24,7 +24,7 @@
 // build by the user have been successfully uploaded into firmware.
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__ // build date and time
 #define STRING_CONFIG_H_AUTHOR "(3Dator GmbH)" // Who made the changes.
-#define STRING_VERSION_NUMBER "1.2.1"
+#define STRING_VERSION_NUMBER "1.2.2"
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
 // This allows the connection of wireless adapters (for instance) to non-default port pins.
@@ -171,6 +171,11 @@
 
 //Uncomment the next line to enable Filament detection
 #define FILAMENT_DETECTOR_PIN 2
+
+
+//activate this, if you use an BLtouch instead of the Inductive Sensor
+//#define BLTouch
+
 
 //this enables experimental Belt feature
 // 0 standart Heatbed
@@ -427,7 +432,12 @@ your extruder heater takes 2 minutes to hit the target on heating.
   const bool Y_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 #endif
 
+#ifdef BLTouch
+const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+#else
 const bool Z_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
+#endif
+
 const bool X_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 const bool Y_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic of the endstop.
@@ -476,7 +486,11 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
   #define X_MIN_POS 0
   #define Y_MAX_POS 180
   #define Y_MIN_POS 0
-  #define Z_MAX_POS 260
+    #ifdef E3D_HOTEND
+      #define Z_MAX_POS 250
+    #else
+      #define Z_MAX_POS 260
+    #endif
   #define Z_MIN_POS 0
 #endif
 
@@ -888,7 +902,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;  // set to true to invert the logic o
 // Use M206 command to correct for switch height offset to actual nozzle height. Store that setting with M500.
 //
 #define SERVO_ENDSTOPS {-1, -1, 0} // Servo index for X, Y, Z. Disable with -1
-#define SERVO_ENDSTOP_ANGLES {0,0, 0,0, 20,100} // X,Y,Z Axis Extend and Retract angles
+#define SERVO_ENDSTOP_ANGLES {0,0, 0,0, 10,90} // X,Y,Z Axis Extend and Retract angles
 
 /**********************************************************************\
  * Support for a filament diameter sensor

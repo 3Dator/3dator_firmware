@@ -381,7 +381,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
    */
   #define WATCH_HOTENDS TRUE
 
-  #define WATCH_TEMP_PERIOD 20                // Seconds
+  #define WATCH_TEMP_PERIOD 30                // Seconds
   #define WATCH_TEMP_INCREASE 2               // Degrees Celsius
 
   #define WATCH_THE_BED FALSE
